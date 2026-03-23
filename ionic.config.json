@@ -1,0 +1,7 @@
+{
+  "name": "CineMatch",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
