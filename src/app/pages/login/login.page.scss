@@ -1,0 +1,71 @@
+.login-background {
+  --background: #0B1222; // color fondo principal
+}
+
+.container-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.brand-name {
+  color: white;
+  font-weight: bold;
+  font-size: 2.2rem;
+  margin-top: 10px;
+  font-family: 'Rubik One', system-ui;
+}
+
+.camera-icon {
+  font-size: 50px;
+  color: #EB5757; // 
+}
+
+.login-card {
+  background: #1E293B; // color card
+  border-radius: 20px;
+  margin-top: 20px;
+  
+  ion-card-title {
+    color: white;
+    font-weight: 600;
+  }
+}
+
+.custom-item {
+  --background: #FFFFFF;
+  --border-radius: 10px;
+  --color: #000;
+  margin-top: 5px;
+}
+
+ion-label {
+  color: white;
+  font-size: 0.9rem;
+}
+
+.login-button {
+  --background: #4A90E2; // color boton
+  --border-radius: 30px;
+  height: 45px;
+  font-weight: bold;
+  text-transform: none;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  
+  .link {
+    color: white;
+    font-size: 0.85rem;
+    text-decoration: underline;
+  }
+}
+.logo-img {
+  height: 100px; 
+  width: auto;   
+  margin-bottom: 10px; 
+}
