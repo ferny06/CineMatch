@@ -58,6 +58,7 @@ ion-label {
   justify-content: space-between;
   padding: 0 10px;
   
+  
   .link {
     color: white;
     font-size: 0.85rem;
@@ -68,4 +69,29 @@ ion-label {
   height: 100px; 
   width: auto;   
   margin-bottom: 10px; 
+}
+
+.footer-container {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center; //  centra horizontalmente
+  gap: 15px; // espacio uniforme entre los 2 links
+  align-items: center;
+}
+
+.footer-link {
+  color: #ffffff;
+ 
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+  
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+.separator {
+  color: #aeb1b7;
+  font-size: 0.8rem;
 }

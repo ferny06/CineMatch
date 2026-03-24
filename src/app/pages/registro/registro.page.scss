@@ -1,0 +1,52 @@
+.login-background {
+  --background: #0B1222; // color fondo
+}
+
+.brand-name {
+  font-family: 'Rubik One', sans-serif;
+  color: white;
+  font-size: 2.2rem;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.login-card {
+  background:  #1E293B; // color card
+  border-radius: 20px;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.custom-item {
+  --background: #E0E0E0; // Fondo clarito del input
+  --border-radius: 8px;
+  --color: #000;
+  
+  ion-icon {
+    color: #555;
+    font-size: 1.2rem;
+  }
+}
+
+.input-label {
+  color: #aeb1b7;
+  font-size: 0.75rem;
+  margin-left: 5px;
+  margin-top: 4px;
+}
+
+.login-button {
+  --background: #4A90E2; // color boton
+  margin-top: 20px;
+  height: 45px;
+  font-weight: bold;
+}
+
+.link-session {
+  color: white;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  cursor: pointer;
+}

@@ -1,13 +1,69 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>registro</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="ion-padding login-background">
+  <div class="container-center">
+    
+    <h1 class="brand-name ion-text-center">Registro</h1>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">registro</ion-title>
-    </ion-toolbar>
-  </ion-header>
+    <ion-card class="login-card">
+      <ion-card-content>
+        
+        <div class="input-group">
+          <ion-item lines="none" class="custom-item">
+            <ion-input type="text" placeholder="tu nombre"></ion-input>
+            <ion-icon name="star" slot="end"></ion-icon>
+          </ion-item>
+          <p class="input-label">Nombre</p>
+        </div>
+
+        <div class="input-group">
+          <ion-item lines="none" class="custom-item">
+            <ion-input type="text" placeholder="username"></ion-input>
+            <ion-icon name="star" slot="end"></ion-icon>
+          </ion-item>
+          <p class="input-label">Nombre de usuario</p>
+        </div>
+
+        <div class="input-group">
+          <ion-item lines="none" class="custom-item">
+            <ion-input type="email" placeholder="ejemplo@correo.cl"></ion-input>
+            <ion-icon name="mail-outline" slot="end"></ion-icon>
+          </ion-item>
+          <p class="input-label">Correo electrónico</p>
+        </div>
+
+        <div class="input-group">
+          <ion-item lines="none" class="custom-item">
+            <ion-input type="text" placeholder="DD/MM/AA"></ion-input>
+            <ion-icon name="calendar-outline" slot="end"></ion-icon>
+          </ion-item>
+          <p class="input-label">Fecha de nacimiento</p>
+        </div>
+
+        <div class="input-group">
+          <ion-item lines="none" class="custom-item">
+            <ion-input type="password" placeholder="****"></ion-input>
+            <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
+          </ion-item>
+          <p class="input-label">Contraseña</p>
+        </div>
+
+        <div class="input-group">
+          <ion-item lines="none" class="custom-item">
+            <ion-input type="password" placeholder="****"></ion-input>
+            <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
+          </ion-item>
+          <p class="input-label">Repetir contraseña</p>
+        </div>
+
+        <ion-button expand="block" shape="round" class="login-button" (click)="registrar()">
+          Crear cuenta
+        </ion-button>
+
+      </ion-card-content>
+    </ion-card>
+
+    <div class="ion-text-center">
+      <a (click)="volverLogin()" class="link-session">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+
+  </div>
 </ion-content>
