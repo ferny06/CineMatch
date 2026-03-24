@@ -1,30 +1,45 @@
 <ion-content class="ion-padding login-background">
   <div class="container-center">
     
-    <h1 class="brand-name ion-text-center">Registro</h1>
+    <h1 class="brand-name ion-text-center">Crear Cuenta</h1>
 
     <ion-card class="login-card">
       <ion-card-content>
         
         <div class="input-group">
           <ion-item lines="none" class="custom-item">
-            <ion-input type="text" placeholder="tu nombre"></ion-input>
-            <ion-icon name="star" slot="end"></ion-icon>
-          </ion-item>
-          <p class="input-label">Nombre</p>
-        </div>
-
-        <div class="input-group">
-          <ion-item lines="none" class="custom-item">
-            <ion-input type="text" placeholder="username"></ion-input>
-            <ion-icon name="star" slot="end"></ion-icon>
+            <ion-input type="text" placeholder="Ej: ferny_06" name="nombre_user"></ion-input>
+            <ion-icon name="at-outline" slot="end"></ion-icon>
           </ion-item>
           <p class="input-label">Nombre de usuario</p>
         </div>
 
         <div class="input-group">
           <ion-item lines="none" class="custom-item">
-            <ion-input type="email" placeholder="ejemplo@correo.cl"></ion-input>
+            <ion-input type="text" placeholder="Tu nombre" name="nombre"></ion-input>
+          </ion-item>
+          <p class="input-label">Nombre</p>
+        </div>
+
+        <ion-row>
+          <ion-col size="6" class="ion-no-padding">
+            <ion-item lines="none" class="custom-item">
+              <ion-input type="text" placeholder="Paterno" name="apellido_1"></ion-input>
+            </ion-item>
+            <p class="input-label">Primer Apellido</p>
+          </ion-col>
+          
+          <ion-col size="6" class="ion-no-padding ion-padding-start">
+            <ion-item lines="none" class="custom-item">
+              <ion-input type="text" placeholder="Materno" name="apellido_2"></ion-input>
+            </ion-item>
+            <p class="input-label">Segundo Apellido</p>
+          </ion-col>
+        </ion-row>
+
+        <div class="input-group">
+          <ion-item lines="none" class="custom-item">
+            <ion-input type="email" placeholder="correo@duocuc.cl" name="email"></ion-input>
             <ion-icon name="mail-outline" slot="end"></ion-icon>
           </ion-item>
           <p class="input-label">Correo electrónico</p>
@@ -32,38 +47,45 @@
 
         <div class="input-group">
           <ion-item lines="none" class="custom-item">
-            <ion-input type="text" placeholder="DD/MM/AA"></ion-input>
-            <ion-icon name="calendar-outline" slot="end"></ion-icon>
+            <ion-input type="date" name="fecha_nacimiento"></ion-input>
           </ion-item>
           <p class="input-label">Fecha de nacimiento</p>
         </div>
 
         <div class="input-group">
           <ion-item lines="none" class="custom-item">
-            <ion-input type="password" placeholder="****"></ion-input>
-            <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
+            <ion-select placeholder="Selecciona" interface="popover" name="genero">
+              <ion-select-option value="Masculino">Masculino</ion-select-option>
+              <ion-select-option value="Femenino">Femenino</ion-select-option>
+              <ion-select-option value="Otro">Otro</ion-select-option>
+            </ion-select>
           </ion-item>
-          <p class="input-label">Contraseña</p>
+          <p class="input-label">Género</p>
         </div>
 
         <div class="input-group">
           <ion-item lines="none" class="custom-item">
-            <ion-input type="password" placeholder="****"></ion-input>
-            <ion-icon name="lock-closed-outline" slot="end"></ion-icon>
+            <ion-range min="1" max="50" step="1" color="primary" name="radio_conex" pin="true">
+              <ion-icon name="map-outline" slot="start"></ion-icon>
+            </ion-range>
           </ion-item>
-          <p class="input-label">Repetir contraseña</p>
+          <p class="input-label">Radio de búsqueda (km)</p>
         </div>
 
-        <ion-button expand="block" shape="round" class="login-button" (click)="registrar()">
-          Crear cuenta
+        <ion-item lines="none" class="toggle-item">
+          <ion-label>¿Permitir que otros te encuentren?</ion-label>
+          <ion-toggle slot="end" color="success" name="busqueda_abierta"></ion-toggle>
+        </ion-item>
+
+        <ion-button expand="block" shape="round" class="login-button ion-margin-top" (click)="registrar()">
+          Finalizar Registro
         </ion-button>
 
       </ion-card-content>
     </ion-card>
 
     <div class="ion-text-center">
-      <a (click)="volverLogin()" class="link-session">¿Ya tienes cuenta? Inicia sesión</a>
+      <a (click)="volverLogin()" class="link-session">Volver al inicio de sesión</a>
     </div>
-
   </div>
 </ion-content>
