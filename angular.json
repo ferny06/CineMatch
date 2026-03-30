@@ -111,7 +111,9 @@
                 "output": "./svg"
               }
             ],
-            "styles": ["src/global.scss", "src/theme/variables.scss"],
+            "styles": ["node_modules/bootstrap/dist/css/bootstrap.min.css", 
+                        "src/global.scss", 
+                        "src/theme/variables.scss"],
             "scripts": []
           },
           "configurations": {
