@@ -4,10 +4,6 @@
  * Representa los mensajes enviados en conversaciones entre usuarios.
  * Los mensajes pueden escribirse sin conexión y sincronizarse luego.
  *
- * Corrección respecto al modelo original:
- * - conversacion_id tiene FK hacia local_conversacion para garantizar
- *   integridad referencial offline. Sin esto, sería una cadena libre
- *   que permitiría mensajes huérfanos (sin conversación asociada).
  */
 export interface LocalMensaje {
   /** UUID generado localmente en el dispositivo al escribir el mensaje offline */

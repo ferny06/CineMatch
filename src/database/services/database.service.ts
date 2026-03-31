@@ -195,7 +195,6 @@ export class DatabaseService {
 
       -- ─────────────────────────────────────────────────────────
       -- Tabla: local_conversacion
-      -- CORRECCIÓN: Agregada para dar soporte referencial a local_mensaje.
       -- ─────────────────────────────────────────────────────────
       CREATE TABLE IF NOT EXISTS local_conversacion (
         id          TEXT NOT NULL PRIMARY KEY,
@@ -236,7 +235,6 @@ export class DatabaseService {
 
       -- ─────────────────────────────────────────────────────────
       -- Tabla: local_mensaje
-      -- Mensajes de conversaciones. FK a local_conversacion (corrección).
       -- ─────────────────────────────────────────────────────────
       CREATE TABLE IF NOT EXISTS local_mensaje (
         local_id        TEXT NOT NULL PRIMARY KEY,
