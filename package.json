@@ -21,8 +21,10 @@
     "@angular/platform-browser": "^20.0.0",
     "@angular/platform-browser-dynamic": "^20.0.0",
     "@angular/router": "^20.0.0",
+    "@capacitor-community/sqlite": "^8.1.0",
+    "@capacitor/android": "^8.3.0",
     "@capacitor/app": "8.0.1",
-    "@capacitor/core": "8.2.0",
+    "@capacitor/core": "^8.3.0",
     "@capacitor/haptics": "8.0.1",
     "@capacitor/keyboard": "8.0.1",
     "@capacitor/status-bar": "8.0.1",
@@ -30,6 +32,7 @@
     "bootstrap": "^5.3.8",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
+    "sql.js": "^1.14.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
@@ -61,5 +64,8 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.9.0"
   },
-  "description": "An Ionic project"
+  "description": "An Ionic project",
+  "browser": {
+    "crypto": false
+  }
 }
