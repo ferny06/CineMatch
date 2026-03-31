@@ -70,4 +70,4 @@ testem.log
 Thumbs.db
 
 .claude
-.mcp
+.mcp.json
