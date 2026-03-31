@@ -18,12 +18,6 @@ import { DB_NAME, DB_VERSION } from '../database.constants';
  *  - Crear todas las tablas al primer inicio (DDL idempotente con CREATE TABLE IF NOT EXISTS)
  *  - Exponer la conexión activa para que servicios CRUD puedan usarla
  *
- * NO contiene lógica de sincronización con Supabase ni operaciones CRUD.
- * Esas responsabilidades se implementarán en servicios separados por entidad.
- *
- * Uso:
- *   En AppComponent.ngOnInit() llamar: await this.databaseService.inicializar();
- *   En otros servicios llamar: this.databaseService.obtenerConexion();
  */
 @Injectable({
   providedIn: 'root', // Singleton automático — no requiere registrarlo en AppModule
@@ -41,71 +35,17 @@ export class DatabaseService {
 
   constructor(private platform: Platform) {}
 
-  /**
-   * Inicializa la base de datos local.
-   *
-   * Debe invocarse una sola vez al arrancar la aplicación, desde AppComponent.ngOnInit().
-   * Las llamadas subsiguientes se ignoran gracias a la bandera `inicializado`.
-   *
-   * Flujo:
-   *  1. Espera a que la plataforma Capacitor esté lista
-   *  2. En web: inicializa el web component jeep-sqlite
-   *  3. Abre o recupera la conexión a la BD
-   *  4. Ejecuta el DDL de creación de tablas
-   */
   async inicializar(): Promise<void> {
-    // Evitar inicializaciones duplicadas
     if (this.inicializado) {
       return;
     }
 
-    // Esperar a que Capacitor y los plugins nativos estén disponibles
     await this.platform.ready();
-
-    // En plataforma web (desarrollo con ng serve o PWA), se necesita
-    // el web component jeep-sqlite como polyfill de SQLite en el navegador.
-    // En Android/iOS se usa la SQLite nativa a través del bridge de Capacitor.
-    if (!this.platform.is('hybrid')) {
-      await this.inicializarWeb();
-    }
-
-    // Abrir la conexión a la BD (la crea si no existe)
     await this.abrirConexion();
-
-    // Crear todas las tablas con CREATE TABLE IF NOT EXISTS (idempotente)
     await this.crearTablas();
 
     this.inicializado = true;
     console.log('[DatabaseService] Base de datos local inicializada correctamente.');
-  }
-
-  /**
-   * Inicialización específica para plataforma web.
-   *
-   * El web component <jeep-sqlite> (definido en index.html) actúa como
-   * polyfill de SQLite en el navegador usando sql.js (WebAssembly).
-   * Este método espera a que el custom element esté registrado antes de continuar.
-   *
-   * Requisito: <jeep-sqlite></jeep-sqlite> debe estar en src/index.html
-   * y jeepSqlite(window) debe llamarse en src/main.ts antes del bootstrap.
-   */
-  private async inicializarWeb(): Promise<void> {
-    // Verificar que el custom element esté presente en el DOM
-    const jeepEl = document.querySelector('jeep-sqlite');
-    if (!jeepEl) {
-      console.warn(
-        '[DatabaseService] El elemento <jeep-sqlite> no está en el DOM. ' +
-        'Asegúrate de incluirlo en src/index.html.'
-      );
-    }
-
-    // Esperar a que el custom element esté completamente definido
-    await customElements.whenDefined('jeep-sqlite');
-
-    // Inicializar el almacenamiento interno de jeep-sqlite (IndexedDB en el navegador)
-    await CapacitorSQLite.initWebStore();
-
-    console.log('[DatabaseService] Web store de jeep-sqlite inicializado.');
   }
 
   /**
@@ -142,12 +82,6 @@ export class DatabaseService {
 
   /**
    * Ejecuta el DDL de creación de todas las tablas de la BD local.
-   *
-   * Usa CREATE TABLE IF NOT EXISTS para que sea idempotente:
-   * si las tablas ya existen (en sesiones posteriores), no falla.
-   *
-   * El esquema completo también está documentado en:
-   *   src/database/schema/cinematch.sql
    */
   private async crearTablas(): Promise<void> {
     const ddl = `
@@ -283,10 +217,6 @@ export class DatabaseService {
   /**
    * Retorna la conexión activa a la BD para que otros servicios puedan usarla.
    *
-   * Ejemplo de uso en un servicio CRUD:
-   *   const db = this.databaseService.obtenerConexion();
-   *   await db.query('SELECT * FROM local_pelicula');
-   *
    * @returns La instancia SQLiteDBConnection activa
    * @throws Error si se llama antes de invocar inicializar()
    */
@@ -302,14 +232,6 @@ export class DatabaseService {
 
   /**
    * Cierra la conexión activa a la BD.
-   *
-   * Se recomienda llamar en el evento de pausa de la aplicación
-   * para liberar recursos del sistema operativo.
-   *
-   * Ejemplo en AppComponent:
-   *   App.addListener('appStateChange', ({ isActive }) => {
-   *     if (!isActive) this.databaseService.cerrarConexion();
-   *   });
    */
   async cerrarConexion(): Promise<void> {
     if (this.db) {
