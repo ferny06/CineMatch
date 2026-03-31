@@ -1,27 +1,92 @@
-#container {
-  text-align: center;
 
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+ion-content {
+    --background: #0B1222; // color fondo principal
 }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.container {
+    padding-left: 15px;
+    padding-right: 15px;
 }
 
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
+//buscador
+.custom-search {
+    --border-radius: 50px;
+    --background: #ffffff;
+    --placeholder-color: #666;
+    --icon-color: #666;
+    padding: 0;
+    height: 45px;
 }
 
-#container a {
-  text-decoration: none;
+
+.section-title {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 400;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #30363d; // linea
+    padding-bottom: 8px;
+}
+
+//scroll horizontal
+.scroll-horizontal {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding-bottom: 15px;
+    
+    &::-webkit-scrollbar {
+        display: none; 
+    }
+}
+
+.movie-card {
+    flex: 0 0 auto;
+    width: 130px; // para ancho fijo de peli
+    scroll-snap-align: start;
+}
+
+.figma-poster {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+//footer me falta cambiarlo aunn
+ion-footer {
+    ion-toolbar {
+        --background: #161b22;
+        --border-style: none;
+    }
+}
+
+.footer-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #8b949e;
+    
+    ion-icon {
+        font-size: 24px;
+        margin-bottom: 2px;
+    }
+    
+    span {
+        font-size: 10px;
+    }
+
+    &.active {
+        color: #58a6ff; // El azul brillante para indicar dónde estás
+    }
+}
+
+// UTILIDADES BOOTSTRAP (FORZADAS)
+.d-flex {
+    display: flex !important;
 }
