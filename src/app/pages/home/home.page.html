@@ -1,20 +1,56 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="bg-dark">
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <img src="assets/icon/favicon.png" style="width: 30px;">
+      <span class="text-white fw-light">Hola, username!</span>
+    </div>
+    <ion-searchbar placeholder="¿Qué película buscas?" class="custom-search" mode="ios"></ion-searchbar>
+  </div>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="mt-5">
+    <div class="container">
+      <p class="section-title">Recomendadas para ti</p>
+    </div>
+    
+    <div class="scroll-horizontal ps-3">
+      <div class="movie-card" *ngFor="let peli of peliculas">
+        <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
+      </div>
+    </div>
+  </div>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <div class="mt-5 mb-5">
+    <div class="container">
+      <p class="section-title">Populares en tu ciudad</p>
+    </div>
+    
+    <div class="scroll-horizontal ps-3">
+      <div class="movie-card" *ngFor="let peli of peliculas.slice(10, 20)">
+        <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
+      </div>
+    </div>
   </div>
 </ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar color="dark" class="py-1">
+    <div class="d-flex justify-content-around align-items-center w-100">
+      
+      <div class="footer-item active">
+        <ion-icon name="home"></ion-icon>
+        <span>Home</span>
+      </div>
+
+      <div class="footer-item">
+        <ion-icon name="star-outline"></ion-icon>
+        <span>Ranking</span>
+      </div>
+
+      <div class="footer-item">
+        <ion-icon name="person-outline"></ion-icon>
+        <span>Perfil</span>
+      </div>
+
+    </div>
+  </ion-toolbar>
+</ion-footer>
