@@ -16,6 +16,7 @@ ion-content {
     --icon-color: #666;
     padding: 0;
     height: 45px;
+    --color: #000000 !important; // color de cuando escribo en barra de busqueda 
 }
 
 
@@ -23,12 +24,12 @@ ion-content {
     color: white;
     font-size: 0.9rem;
     font-weight: 400;
-    margin-bottom: 12px;
+    margin-bottom: 18px;
     border-bottom: 1px solid #30363d; // linea
     padding-bottom: 8px;
 }
 
-//scroll horizontal
+
 .scroll-horizontal {
     display: flex;
     overflow-x: auto;
@@ -65,15 +66,19 @@ ion-footer {
 }
 
 .footer-item {
+    background: #0B1222 !important;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #8b949e;
+    color: #ffffff;
+    border: none !important;
+    
+    
     
     ion-icon {
-        font-size: 24px;
+        font-size: 60px;
         margin-bottom: 2px;
     }
     
@@ -82,11 +87,18 @@ ion-footer {
     }
 
     &.active {
-        color: #58a6ff; // El azul brillante para indicar dónde estás
+        color: #e2b41d; //   para indicar en que page estamos
     }
 }
+
 
 // UTILIDADES BOOTSTRAP (FORZADAS)
 .d-flex {
     display: flex !important;
 }
+
+.mt-5 {
+    margin-top: 3.5rem !important; 
+    margin-bottom: 2rem;
+}
+

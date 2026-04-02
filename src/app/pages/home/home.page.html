@@ -1,10 +1,19 @@
 <ion-content class="bg-dark">
   <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <img src="assets/icon/favicon.png" style="width: 30px;">
-      <span class="text-white fw-light">Hola, username!</span>
-    </div>
-    <ion-searchbar placeholder="¿Qué película buscas?" class="custom-search" mode="ios"></ion-searchbar>
+ <div class="d-flex justify-content-between align-items-center mb-3 px-1" style="line-height: 1;">
+  
+  <img src="assets/icon/logo.png" style="width: 32px; height: auto; display: block; margin-right: 10px">
+  
+  <span class="text-white fw-light m-0 p-0" style="font-size: 1rem; display: flex; align-items: center; margin-top: 3px">
+    Hola, username!
+  </span>
+
+</div>
+    <ion-searchbar placeholder="¿Qué película buscas?" 
+  class="custom-search" 
+  mode="ios"
+  (ionInput)="buscarPelicula($event)"
+  [debounce]="250">></ion-searchbar>
   </div>
 
   <div class="mt-5">
@@ -13,13 +22,13 @@
     </div>
     
     <div class="scroll-horizontal ps-3">
-      <div class="movie-card" *ngFor="let peli of peliculas">
+      <div class="movie-card" *ngFor="let peli of peliculas.slice(0,10)">
         <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
       </div>
     </div>
   </div>
 
-  <div class="mt-5 mb-5">
+  <div class="mt-5 pt-5 mb-5">
     <div class="container">
       <p class="section-title">Populares en tu ciudad</p>
     </div>
@@ -33,21 +42,21 @@
 </ion-content>
 
 <ion-footer class="ion-no-border">
-  <ion-toolbar color="dark" class="py-1">
+  <ion-toolbar  class="py-1">
     <div class="d-flex justify-content-around align-items-center w-100">
       
-      <div class="footer-item active">
-        <ion-icon name="home"></ion-icon>
+      <div class="footer-item active" (click)="irAHome()">
+        <ion-icon src="assets/icon/home_icon.svg"></ion-icon>
         <span>Home</span>
       </div>
 
       <div class="footer-item">
-        <ion-icon name="star-outline"></ion-icon>
+        <ion-icon src="assets/icon/ranking_icon.svg"></ion-icon>
         <span>Ranking</span>
       </div>
 
-      <div class="footer-item">
-        <ion-icon name="person-outline"></ion-icon>
+      <div class="footer-item" (click)="irAPerfil()">
+        <ion-icon src="assets/icon/perfil_icon.svg"></ion-icon>
         <span>Perfil</span>
       </div>
 

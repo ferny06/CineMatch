@@ -1,0 +1,84 @@
+ion-content {
+  --background: #0B1222; // color fondo principal
+}
+
+.header-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 0;
+  background: #0B1222;
+
+  ion-avatar {
+    width: 120px;
+    height: 120px;
+    border: 3px solid #e2b41d; // Un borde dorado para resaltar
+    margin-bottom: 15px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    margin: 0;
+  }
+
+  p {
+    color: #a0a0a0;
+    margin-top: 5px;
+  }
+}
+
+.info-section {
+  padding: 10px;
+
+  ion-card {
+    background: #1e1e1e;
+    color: white;
+    margin-bottom: 20px;
+  }
+
+  ion-item {
+    --background: transparent;
+    --color: white;
+    
+    ion-icon {
+      color: #e2b41d;
+    }
+    
+    h3 { color: white; }
+    p { color: #a0a0a0; }
+  }
+}
+
+.footer-item {
+    background: #0B1222 !important;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    border: none !important;
+    
+    
+    
+    ion-icon {
+        font-size: 60px;
+        margin-bottom: 2px;
+    }
+    
+    span {
+        font-size: 10px;
+    }
+
+    &.active {
+        color: #e2b41d; //   para indicar en que page estamos
+    }
+}
+
+
+// UTILIDADES BOOTSTRAP (FORZADAS)
+.d-flex {
+    display: flex !important;
+}

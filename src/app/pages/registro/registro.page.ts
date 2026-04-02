@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router'; // router para navegar
+import { DatabaseService } from '../../../database/services/database.service';
 
 
 @Component({
@@ -26,7 +27,9 @@ userPost = {
     busqueda_abierta: true
   };
 
-  constructor(private router: Router) { }
+  constructor(private router: Router,
+              private dbService: DatabaseService
+  ) { }
   ngOnInit() { }
 
   registrar() {
