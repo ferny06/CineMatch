@@ -9,7 +9,26 @@ import { Router } from '@angular/router';
 })
 export class LoginPage {
 
+
+  //aquí se crean los objetos que recibirán los datos del html
+  loginData = {
+    email: '',
+    password: '' };
+
   constructor(private router: Router) { }
+
+  // función para el botón ingresar
+  ingresar() {
+    console.log('Intentando iniciar sesión con:', this.loginData);
+    
+    
+    // por mientras, mientras se podra ingresar con cualquier dato (solo para probar app)
+    if(this.loginData.email !== '' && this.loginData.password !== '') {
+      this.router.navigate(['/home']);
+    } else {
+      alert('Por favor, completa los campos');
+    }
+  }
 
   // funcion para navegar al page de registro
   irARegistro() {
