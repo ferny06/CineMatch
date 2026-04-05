@@ -6,8 +6,10 @@
  *
  * Campos omitidos intencionalmente respecto a la tabla central:
  * - auth_user_id: gestionado por Supabase Auth; no se persiste por seguridad
- * - fecha_nacimiento, genero: no son necesarios offline
  * - latitud, longitud: cambian frecuentemente; se obtienen del GPS en tiempo real
+ *
+ * Nota: fecha_nacimiento y genero se incluyen porque son NOT NULL en Supabase
+ * y se recopilan durante el registro — sin ellos el upsert a Supabase fallaría.
  */
 export interface LocalUsuario {
   /** UUID del usuario, espejo del campo id en Supabase */
@@ -27,6 +29,19 @@ export interface LocalUsuario {
 
   /** Correo electrónico del usuario */
   email?: string | null;
+
+  /**
+   * Fecha de nacimiento en formato ISO YYYY-MM-DD.
+   * Requerida (NOT NULL) en la tabla `usuario` de Supabase.
+   * Se recopila durante el registro para que el sync no falle.
+   */
+  fecha_nacimiento?: string | null;
+
+  /**
+   * Género del usuario: 'Masculino' | 'Femenino' | 'Otro'.
+   * Requerido (NOT NULL) en la tabla `usuario` de Supabase.
+   */
+  genero?: string | null;
 
   /** URL del avatar almacenado en Supabase Storage */
   avatar_url?: string | null;
@@ -51,4 +66,11 @@ export interface LocalUsuario {
 
   /** Timestamp ISO 8601 de la última sincronización exitosa con el servidor */
   synced_at: string;
+
+  /**
+   * ID del usuario en Supabase Auth (uuid).
+   * Se obtiene al llamar auth.signUp() durante el registro.
+   * Es NOT NULL en la tabla `usuario` de Supabase — sin él el upsert falla.
+   */
+  auth_user_id?: string | null;
 }

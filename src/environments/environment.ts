@@ -3,7 +3,17 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+
+  // ─── Supabase ───────────────────────────────────────────────────────────────
+  // URL del proyecto CineMatch en Supabase.
+  // Se obtiene desde: Supabase Dashboard → Settings → API → Project URL
+  supabaseUrl: 'https://vfhnqujmbaemmmhfurwp.supabase.co',
+
+  // Clave pública (anon key) del proyecto.
+  // Es seguro incluirla en el cliente; el acceso real está controlado por RLS.
+  // Se obtiene desde: Supabase Dashboard → Settings → API → Project API keys → anon / public
+  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmaG5xdWptYmFlbW1taGZ1cndwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MTQ3MjYsImV4cCI6MjA5MDQ5MDcyNn0.7POOZPWv6MkUTfmltHq6UhSAiLOp9rMzqJOpk4qo3V0'
 };
 
 /*
