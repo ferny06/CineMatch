@@ -12,7 +12,7 @@ import { DatabaseService } from '../../../database/services/database.service';
 export class RegistroPage implements OnInit {
 
   
-
+//aqui se creó el objeto "userPost" q es el q capturará los datos
 userPost = {
     nombre_user: '',
     nombre: '',

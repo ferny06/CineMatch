@@ -22,7 +22,7 @@ export class LoginPage {
     console.log('Intentando iniciar sesión con:', this.loginData);
     
     
-    // por mientras, mientras se podra ingresar con cualquier dato (solo para probar app)
+    // ESTO DP HAY QUE CAMBIARLO , es por mientras, mientras se podra ingresar con cualquier dato (solo para probar app)
     if(this.loginData.email !== '' && this.loginData.password !== '') {
       this.router.navigate(['/home']);
     } else {
