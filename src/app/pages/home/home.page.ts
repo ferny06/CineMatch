@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MovieService } from '../../services/movie';
 import { Router } from '@angular/router';
 
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
@@ -55,5 +56,10 @@ export class HomePage implements OnInit {
   this.peliculas = [...this.peliculasCopia];
   console.log('Vista de Home reiniciada');
   }
+
+  verDetalle(peliculaId: number) {
+  // a la ruta pasando el id que viene de la api
+  this.router.navigate(['/pelicula', peliculaId]);
+}
 } 
 

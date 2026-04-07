@@ -23,6 +23,10 @@ const routes: Routes = [
     path: 'perfil',
     loadChildren: () => import('./pages/perfil/perfil.module').then( m => m.PerfilPageModule)
   },
+  {
+  path: 'pelicula/:id', // id para que acepte el número de la película
+  loadChildren: () => import('./pages/pelicula/pelicula.module').then( m => m.PeliculaPageModule)
+},
 ];
 
 @NgModule({

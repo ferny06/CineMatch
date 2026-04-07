@@ -84,133 +84,122 @@ export class DatabaseService {
    * Ejecuta el DDL de creación de todas las tablas de la BD local.
    */
   private async crearTablas(): Promise<void> {
-    const ddl = `
-      -- Habilitar modo WAL para mejor rendimiento en lecturas/escrituras concurrentes
-      PRAGMA journal_mode = WAL;
+    // En Android, execute() usa execSQL() internamente, que no soporta PRAGMA
+    // (retornan valores) ni múltiples statements encadenados de forma confiable.
+    // Solución: PRAGMAs via query(), tablas e índices via executeSet() individual.
 
-      -- Activar validación de claves foráneas (desactivado por defecto en SQLite)
-      PRAGMA foreign_keys = ON;
+    // Activar WAL y foreign keys — deben ir como queries separadas
+    await this.db.query('PRAGMA journal_mode = WAL;');
+    await this.db.query('PRAGMA foreign_keys = ON;');
 
-      -- ─────────────────────────────────────────────────────────
-      -- Tabla: local_usuario
-      -- Caché del perfil del usuario autenticado.
-      -- ─────────────────────────────────────────────────────────
-      CREATE TABLE IF NOT EXISTS local_usuario (
-        id               TEXT NOT NULL PRIMARY KEY,
-        nombre_user      TEXT,
-        nombre           TEXT,
-        apellido_1       TEXT,
-        apellido_2       TEXT,
-        email            TEXT,
-        avatar_url       TEXT,
-        bio              TEXT,
-        radio_conex      INTEGER,
-        busqueda_abierta TEXT CHECK(busqueda_abierta IN ('S','N')),
-        sync_status      TEXT NOT NULL DEFAULT 'synced',
-        synced_at        TEXT NOT NULL
-      );
+    // DDL individual por tabla/índice — executeSet garantiza el orden correcto
+    // y evita el error "Queries can be performed using rawQuery methods only"
+    await this.db.executeSet([
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_usuario (
+          id               TEXT NOT NULL PRIMARY KEY,
+          nombre_user      TEXT,
+          nombre           TEXT,
+          apellido_1       TEXT,
+          apellido_2       TEXT,
+          email            TEXT,
+          auth_user_id     TEXT,
+          fecha_nacimiento TEXT,
+          genero           TEXT,
+          avatar_url       TEXT,
+          bio              TEXT,
+          radio_conex      INTEGER,
+          busqueda_abierta TEXT CHECK(busqueda_abierta IN ('S','N')),
+          sync_status      TEXT NOT NULL DEFAULT 'synced',
+          synced_at        TEXT NOT NULL
+        );`,
+        values: [],
+      },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_pelicula (
+          id              TEXT NOT NULL PRIMARY KEY,
+          tmdb_id         INTEGER UNIQUE,
+          titulo          TEXT NOT NULL,
+          sinopsis        TEXT,
+          poster_url      TEXT,
+          fecha_estreno   TEXT,
+          duracion_min    INTEGER,
+          promedio_votos  REAL,
+          generos_json    TEXT,
+          synced_at       TEXT NOT NULL
+        );`,
+        values: [],
+      },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_conversacion (
+          id          TEXT NOT NULL PRIMARY KEY,
+          sync_status TEXT NOT NULL DEFAULT 'synced',
+          synced_at   TEXT NOT NULL
+        );`,
+        values: [],
+      },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_lista (
+          local_id    TEXT NOT NULL PRIMARY KEY,
+          server_id   TEXT,
+          usuario_id  TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
+          pelicula_id TEXT NOT NULL REFERENCES local_pelicula(id) ON DELETE CASCADE,
+          estado      TEXT NOT NULL,
+          fecha_visto TEXT,
+          sync_status TEXT NOT NULL DEFAULT 'pending',
+          created_at  TEXT NOT NULL
+        );`,
+        values: [],
+      },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_resena (
+          local_id      TEXT NOT NULL PRIMARY KEY,
+          server_id     TEXT,
+          usuario_id    TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
+          pelicula_id   TEXT NOT NULL REFERENCES local_pelicula(id) ON DELETE CASCADE,
+          calificacion  INTEGER NOT NULL CHECK(calificacion BETWEEN 1 AND 10),
+          comentario    TEXT,
+          tiene_spoiler TEXT NOT NULL DEFAULT 'N' CHECK(tiene_spoiler IN ('S','N')),
+          sync_status   TEXT NOT NULL DEFAULT 'pending',
+          created_at    TEXT NOT NULL
+        );`,
+        values: [],
+      },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_mensaje (
+          local_id        TEXT NOT NULL PRIMARY KEY,
+          server_id       TEXT,
+          emisor_id       TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
+          conversacion_id TEXT NOT NULL REFERENCES local_conversacion(id) ON DELETE CASCADE,
+          contenido       TEXT NOT NULL,
+          leido           TEXT NOT NULL DEFAULT 'N' CHECK(leido IN ('S','N')),
+          sync_status     TEXT NOT NULL DEFAULT 'pending',
+          created_at      TEXT NOT NULL
+        );`,
+        values: [],
+      },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS cola_sync (
+          id           INTEGER PRIMARY KEY AUTOINCREMENT,
+          tabla        TEXT    NOT NULL,
+          registro_id  TEXT    NOT NULL,
+          operacion    TEXT    NOT NULL CHECK(operacion IN ('INSERT','UPDATE','DELETE')),
+          intentos     INTEGER NOT NULL DEFAULT 0,
+          status       TEXT    NOT NULL DEFAULT 'pendiente',
+          created_at   TEXT    NOT NULL,
+          last_attempt TEXT
+        );`,
+        values: [],
+      },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_lista_usuario   ON local_lista(usuario_id);`,   values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_lista_pelicula  ON local_lista(pelicula_id);`,  values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_resena_usuario  ON local_resena(usuario_id);`,  values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_resena_pelicula ON local_resena(pelicula_id);`, values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_mensaje_conv    ON local_mensaje(conversacion_id);`, values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_cola_status     ON cola_sync(status);`,         values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_cola_tabla      ON cola_sync(tabla);`,          values: [] },
+    ], false);
 
-      -- ─────────────────────────────────────────────────────────
-      -- Tabla: local_pelicula
-      -- Caché de películas. Géneros desnormalizados en JSON.
-      -- ─────────────────────────────────────────────────────────
-      CREATE TABLE IF NOT EXISTS local_pelicula (
-        id              TEXT NOT NULL PRIMARY KEY,
-        tmdb_id         INTEGER UNIQUE,
-        titulo          TEXT NOT NULL,
-        sinopsis        TEXT,
-        poster_url      TEXT,
-        fecha_estreno   TEXT,
-        duracion_min    INTEGER,
-        promedio_votos  REAL,
-        generos_json    TEXT,
-        synced_at       TEXT NOT NULL
-      );
-
-      -- ─────────────────────────────────────────────────────────
-      -- Tabla: local_conversacion
-      -- ─────────────────────────────────────────────────────────
-      CREATE TABLE IF NOT EXISTS local_conversacion (
-        id          TEXT NOT NULL PRIMARY KEY,
-        sync_status TEXT NOT NULL DEFAULT 'synced',
-        synced_at   TEXT NOT NULL
-      );
-
-      -- ─────────────────────────────────────────────────────────
-      -- Tabla: local_lista
-      -- Lista personal de películas. Incluye fecha_visto (mejora sobre el modelo original).
-      -- ─────────────────────────────────────────────────────────
-      CREATE TABLE IF NOT EXISTS local_lista (
-        local_id    TEXT NOT NULL PRIMARY KEY,
-        server_id   TEXT,
-        usuario_id  TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
-        pelicula_id TEXT NOT NULL REFERENCES local_pelicula(id) ON DELETE CASCADE,
-        estado      TEXT NOT NULL,
-        fecha_visto TEXT,
-        sync_status TEXT NOT NULL DEFAULT 'pending',
-        created_at  TEXT NOT NULL
-      );
-
-      -- ─────────────────────────────────────────────────────────
-      -- Tabla: local_resena
-      -- Reseñas escritas por el usuario sobre películas.
-      -- ─────────────────────────────────────────────────────────
-      CREATE TABLE IF NOT EXISTS local_resena (
-        local_id      TEXT NOT NULL PRIMARY KEY,
-        server_id     TEXT,
-        usuario_id    TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
-        pelicula_id   TEXT NOT NULL REFERENCES local_pelicula(id) ON DELETE CASCADE,
-        calificacion  INTEGER NOT NULL CHECK(calificacion BETWEEN 1 AND 10),
-        comentario    TEXT,
-        tiene_spoiler TEXT NOT NULL DEFAULT 'N' CHECK(tiene_spoiler IN ('S','N')),
-        sync_status   TEXT NOT NULL DEFAULT 'pending',
-        created_at    TEXT NOT NULL
-      );
-
-      -- ─────────────────────────────────────────────────────────
-      -- Tabla: local_mensaje
-      -- ─────────────────────────────────────────────────────────
-      CREATE TABLE IF NOT EXISTS local_mensaje (
-        local_id        TEXT NOT NULL PRIMARY KEY,
-        server_id       TEXT,
-        emisor_id       TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
-        conversacion_id TEXT NOT NULL REFERENCES local_conversacion(id) ON DELETE CASCADE,
-        contenido       TEXT NOT NULL,
-        leido           TEXT NOT NULL DEFAULT 'N' CHECK(leido IN ('S','N')),
-        sync_status     TEXT NOT NULL DEFAULT 'pending',
-        created_at      TEXT NOT NULL
-      );
-
-      -- ─────────────────────────────────────────────────────────
-      -- Tabla: cola_sync
-      -- Cola de operaciones offline pendientes de enviar a Supabase.
-      -- CORRECCIÓN: intentos es NOT NULL DEFAULT 0.
-      -- ─────────────────────────────────────────────────────────
-      CREATE TABLE IF NOT EXISTS cola_sync (
-        id           INTEGER PRIMARY KEY AUTOINCREMENT,
-        tabla        TEXT    NOT NULL,
-        registro_id  TEXT    NOT NULL,
-        operacion    TEXT    NOT NULL CHECK(operacion IN ('INSERT','UPDATE','DELETE')),
-        intentos     INTEGER NOT NULL DEFAULT 0,
-        status       TEXT    NOT NULL DEFAULT 'pendiente',
-        created_at   TEXT    NOT NULL,
-        last_attempt TEXT
-      );
-
-      -- ─────────────────────────────────────────────────────────
-      -- Índices para optimizar consultas frecuentes
-      -- ─────────────────────────────────────────────────────────
-      CREATE INDEX IF NOT EXISTS idx_lista_usuario   ON local_lista(usuario_id);
-      CREATE INDEX IF NOT EXISTS idx_lista_pelicula  ON local_lista(pelicula_id);
-      CREATE INDEX IF NOT EXISTS idx_resena_usuario  ON local_resena(usuario_id);
-      CREATE INDEX IF NOT EXISTS idx_resena_pelicula ON local_resena(pelicula_id);
-      CREATE INDEX IF NOT EXISTS idx_mensaje_conv    ON local_mensaje(conversacion_id);
-      CREATE INDEX IF NOT EXISTS idx_cola_status     ON cola_sync(status);
-      CREATE INDEX IF NOT EXISTS idx_cola_tabla      ON cola_sync(tabla);
-    `;
-
-    // Ejecutar el DDL completo como una sola transacción
-    await this.db.execute(ddl, false);
     console.log('[DatabaseService] Tablas creadas o verificadas correctamente.');
   }
 

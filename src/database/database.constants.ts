@@ -12,8 +12,13 @@ export const DB_NAME = 'cinematch_local';
 /**
  * Versión del esquema de la base de datos.
  * Incrementar este número cuando se realicen cambios estructurales (migraciones).
+ *
+ * v1 → v2: Se agregan columnas `fecha_nacimiento` y `genero` a `local_usuario`.
+ *          Ambas son NOT NULL en Supabase y se recopilan durante el registro.
+ * v2 → v3: Se agrega columna `auth_user_id` a `local_usuario`.
+ *          Es el UUID de Supabase Auth, NOT NULL en la tabla central `usuario`.
  */
-export const DB_VERSION = 1;
+export const DB_VERSION = 3;
 
 /** Nombres de las tablas de la base de datos local */
 export const DB_TABLES = {

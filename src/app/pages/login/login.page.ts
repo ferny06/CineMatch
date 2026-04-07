@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
   selector: 'app-login',
@@ -9,25 +10,45 @@ import { Router } from '@angular/router';
 })
 export class LoginPage {
 
-
   //aquí se crean los objetos que recibirán los datos del html
   loginData = {
     email: '',
     password: '' };
 
-  constructor(private router: Router) { }
+  constructor(private router: Router,
+              private supabaseService: SupabaseService) { }
 
   // función para el botón ingresar
-  ingresar() {
+  async ingresar() {
     console.log('Intentando iniciar sesión con:', this.loginData);
-    
-    
-    // ESTO DP HAY QUE CAMBIARLO , es por mientras, mientras se podra ingresar con cualquier dato (solo para probar app)
-    if(this.loginData.email !== '' && this.loginData.password !== '') {
-      this.router.navigate(['/home']);
-    } else {
+
+    // VALIDACIÓN BÁSICA: campos vacíos
+    if (!this.loginData.email || !this.loginData.password) {
       alert('Por favor, completa los campos');
+      return;
     }
+
+    // // por mientras, mientras se podra ingresar con cualquier dato (solo para probar app)
+    // if(this.loginData.email !== '' && this.loginData.password !== '') {
+    //   this.router.navigate(['/home']);
+    // } else {
+    //   alert('Por favor, completa los campos');
+    // }
+
+    // Validar credenciales contra Supabase Auth
+    const { data, error } = await this.supabaseService.supabase.auth.signInWithPassword({
+      email:    this.loginData.email,
+      password: this.loginData.password,
+    });
+
+    if (error) {
+      console.error('[LoginPage] Error al iniciar sesión:', error.message);
+      alert('Correo o contraseña incorrectos.');
+      return;
+    }
+
+    console.log('[LoginPage] Sesión iniciada. Usuario:', data.user?.email);
+    this.router.navigate(['/home']);
   }
 
   // funcion para navegar al page de registro

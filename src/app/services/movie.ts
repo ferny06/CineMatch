@@ -20,4 +20,9 @@ export class MovieService {
   searchMovies(query: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/search/movie?api_key=${this.apiKey}&query=${query}&language=es-ES`);
   }
+
+  // funcion para obtener el detalle de UNA peli especfica
+getMovieById(id: string): Observable<any> {
+  return this.http.get(`${this.baseUrl}/movie/${id}?api_key=${this.apiKey}&language=es-ES`);
+}
 }

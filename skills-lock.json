@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "comment-code-generate-a-tutorial": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "8fad68f9f99c8eb4a4799e34a5e66692a20d66e6975c93d358cbef01be23ba15"
+    }
+  }
+}

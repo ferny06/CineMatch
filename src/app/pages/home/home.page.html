@@ -22,7 +22,7 @@
     </div>
     
     <div class="scroll-horizontal ps-3">
-      <div class="movie-card" *ngFor="let peli of peliculas.slice(0,10)">
+      <div class="movie-card" *ngFor="let peli of peliculas.slice(0,10)" (click)="verDetalle(peli.id)">
         <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
       </div>
     </div>
@@ -34,7 +34,7 @@
     </div>
     
     <div class="scroll-horizontal ps-3">
-      <div class="movie-card" *ngFor="let peli of peliculas.slice(10, 20)">
+      <div class="movie-card" *ngFor="let peli of peliculas.slice(10, 20)" (click)="verDetalle(peli.id)">
         <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
       </div>
     </div>
