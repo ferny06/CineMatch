@@ -36,17 +36,27 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
 
-// Esto obliga a que TODOS los toolbars de la app respeten el color oscuro
+// para q todos los toolbars de la app respeten el color oscuro
 ion-toolbar {
   --background: #0B1222 !important;
   --color: white !important;
   border-width: 0 !important;
 }
 
-// Esto quita la línea o sombra que a veces queda en el header
+// y essto quita la linea o sombra que a veces queda en el header
 ion-header {
   background-color: #0B1222 !important;
   &.ion-no-border::after {
     display: none !important;
   }
+}
+
+ion-back-button {
+  --color: #ffffff; // flecha color blanco
+  margin-left: 5px;
+}
+
+// para que el titulo no este tan pegado a la flecha
+ion-title {
+  padding-inline: 8px;
 }
