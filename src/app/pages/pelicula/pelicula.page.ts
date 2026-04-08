@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { MovieService } from '../../services/movie'; // Asegúrate que esta ruta sea la correcta
+import { MovieService } from '../../services/movie'; 
 
 @Component({
   selector: 'app-pelicula',
@@ -10,7 +10,7 @@ import { MovieService } from '../../services/movie'; // Asegúrate que esta ruta
 })
 export class PeliculaPage implements OnInit {
 
-  // objeto inicializado con los nombres de tablas de la BBDD
+  // objeto inicializado con los nombres de tablas de la bd
   peli: any = {
     id: '',                
     tmdb_id: 0,            
