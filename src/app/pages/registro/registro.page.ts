@@ -126,7 +126,17 @@ userPost = {
         synced_at:        ahora,
       };
 
-      // Paso 1: INSERT en SQLite local (offline-first).
+      // Paso 1: Upsert directo a Supabase mientras hay red garantizada.
+      // signUp() acaba de funcionar, así que hay internet en este momento.
+      // Esto asegura que el usuario quede en la tabla `usuario` de Supabase
+      // independientemente de si el sync de cola falla después.
+      const { error: upsertError } = await this.supabaseService.upsertUsuario(nuevoUsuario);
+      if (upsertError) {
+        alert(`Error al guardar tu perfil en el servidor: ${upsertError}`);
+        return;
+      }
+
+      // Paso 2: INSERT en SQLite local (offline-first).
       const db = this.dbService.obtenerConexion();
       await db.run(`
         INSERT INTO ${DB_TABLES.USUARIO}
@@ -150,7 +160,7 @@ userPost = {
         nuevoUsuario.synced_at,
       ]);
 
-      // Paso 2: Encolar en cola_sync para sincronizar con Supabase.
+      // Paso 3: Encolar en cola_sync para sincronizar futuras actualizaciones del perfil.
       // ColaService insertará en cola_sync y, si hay red, disparará el sync
       // inmediatamente (fire-and-forget). Sin red, el ítem queda pendiente
       // y se enviará cuando vuelva la conectividad o en el próximo arranque.
