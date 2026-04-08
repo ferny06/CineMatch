@@ -1,0 +1,44 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar >
+    <ion-title>Mis Listas</ion-title>
+  </ion-toolbar>
+  
+  <ion-toolbar >
+    <ion-segment [(ngModel)]="segmento" mode="ios">
+      <ion-segment-button value="por_ver">
+        <ion-label>Por ver</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="visto">
+        <ion-label>Vistas</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div *ngIf="filtradas.length === 0" class="empty-container">
+    <ion-icon name="film-outline"></ion-icon>
+    <p>Tu lista está vacía</p>
+  </div>
+
+  <ion-grid *ngIf="filtradas.length > 0">
+    <ion-row>
+      <ion-col size="6" *ngFor="let peli of filtradas">
+        <ion-card class="movie-card" [routerLink]="['/pelicula', peli.pelicula_id]">
+          <div class="poster-container">
+            <img [src]="peli.poster_url" />
+            <ion-badge [color]="peli.sync_status === 'sincronizado' ? 'success' : 'warning'">
+              <ion-icon [name]="peli.sync_status === 'sincronizado' ? 'cloud-done' : 'cloud-upload'"></ion-icon>
+            </ion-badge>
+          </div>
+          
+          <ion-card-header>
+            <ion-card-subtitle>{{ peli.titulo }}</ion-card-subtitle>
+            <p class="date-text">Agregada: {{ peli.created_at }}</p>
+            <p *ngIf="peli.fecha_visto" class="visto-text">Vista: {{ peli.fecha_visto }}</p>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

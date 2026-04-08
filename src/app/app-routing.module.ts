@@ -27,6 +27,10 @@ const routes: Routes = [
   path: 'pelicula/:id', // id para que acepte el número de la película
   loadChildren: () => import('./pages/pelicula/pelicula.module').then( m => m.PeliculaPageModule)
 },
+  {
+    path: 'mis-listas',
+    loadChildren: () => import('./pages/mis-listas/mis-listas.module').then( m => m.MisListasPageModule)
+  },
 ];
 
 @NgModule({

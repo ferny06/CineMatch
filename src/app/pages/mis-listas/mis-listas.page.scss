@@ -1,0 +1,59 @@
+:host {
+  display: block;
+  height: 100%;
+  --background: #0B1222;
+}
+
+ion-content {
+  --background: #0B1222 !important;
+}
+
+ion-segment {
+  margin: 12px 16px;
+  background: #1c2536 !important;
+  border-radius: 8px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px auto; 
+  width: 90%;
+  
+  ion-segment-button {
+    --color: #999;
+    --color-checked: #ffffff;
+    --indicator-color: #4A90E2; 
+    font-weight: 600;
+    flex: 1; 
+    max-width: 170px;
+  }
+}
+
+.movie-card {
+  margin: 8px 4px;
+  background: #161f2e !important; 
+  border-radius: 12px;
+  border: 1px solid #2a3548;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+
+  .poster-container {
+    position: relative;
+    img { height: 250px; object-fit: cover; width: 100%; display: block; }
+    ion-badge {
+      position: absolute; top: 8px; right: 8px;
+      border-radius: 50%; height: 24px; width: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+  }
+
+  ion-card-header {
+    padding: 10px 8px;
+    ion-card-subtitle {
+      color: #ffffff !important;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-overflow: ellipsis;
+    }
+    .date-text { font-size: 0.7rem; color: #8899ac; margin-top: 4px; }
+  }
+}
