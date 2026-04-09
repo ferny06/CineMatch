@@ -1,0 +1,36 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nueva Reseña</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-container">
+    <h2 class="text-white">¿Qué te pareció la película?</h2>
+    
+    <div class="stars-row ion-text-center ion-margin-vertical">
+      <ion-icon *ngFor="let s of [1,2,3,4,5]" 
+                [name]="resena.calificacion >= s ? 'star' : 'star-outline'"
+                (click)="setRating(s)"
+                class="star-icon">
+      </ion-icon>
+    </div>
+
+    <ion-item fill="outline" mode="md" class="ion-margin-top">
+      <ion-label position="floating">Escribe tu opinión</ion-label>
+      <ion-textarea [(ngModel)]="resena.comentario" rows="6" placeholder="Cuéntanos más..."></ion-textarea>
+    </ion-item>
+
+    <ion-item lines="none" class="ion-margin-top">
+      <ion-label class="text-white">¿Contiene spoilers?</ion-label>
+      <ion-toggle [(ngModel)]="resena.tiene_spoiler" class="spoiler"></ion-toggle>
+    </ion-item>
+
+    <ion-button expand="block"  class="boton-reseña main-btn" (click)="guardar()">
+      Publica tu reseña 
+    </ion-button>
+  </div>
+</ion-content>

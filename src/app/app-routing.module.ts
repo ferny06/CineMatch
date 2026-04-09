@@ -31,6 +31,10 @@ const routes: Routes = [
     path: 'mis-listas',
     loadChildren: () => import('./pages/mis-listas/mis-listas.module').then( m => m.MisListasPageModule)
   },
+  {
+    path: 'crear-resena/:id',
+    loadChildren: () => import('./pages/crear-resena/crear-resena.module').then( m => m.CrearResenaPageModule)
+  },
 ];
 
 @NgModule({

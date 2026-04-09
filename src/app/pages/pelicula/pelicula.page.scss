@@ -100,5 +100,10 @@ ion-content {
       line-height: 1.6;
       font-size: 0.95rem;
     }
-  }
+
+    .boton-resena {
+  --background:#4A90E2; // color boton
+  --color: white;
+  font-weight: bold;
 }
+} }

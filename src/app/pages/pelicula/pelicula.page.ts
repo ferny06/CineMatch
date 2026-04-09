@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MovieService } from '../../services/movie'; 
 
 @Component({
@@ -26,7 +26,8 @@ export class PeliculaPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private movieService: MovieService
+    private movieService: MovieService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -44,6 +45,7 @@ export class PeliculaPage implements OnInit {
       next: (res: any) => {
         
         this.peli = {
+          id: res.id.toString(),
           tmdb_id: res.id,
           titulo: res.title,
           sinopsis: res.overview,              // "overview" de API pasa a "sinopsis"
@@ -61,5 +63,12 @@ export class PeliculaPage implements OnInit {
         console.error('Error al traer detalles de la API:', err);
       }
     });
+
+  
   }
+    // para ir  a pantalla de crear reseña
+  irAEscribirResena() {
+    
+    this.router.navigate(['/crear-resena', this.peli.id]);
+}
 }
