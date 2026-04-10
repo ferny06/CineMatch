@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-crear-resena',
@@ -24,7 +25,8 @@ export class CrearResenaPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private alertController: AlertController
   ) { }
 
   ngOnInit() {
@@ -41,19 +43,29 @@ export class CrearResenaPage implements OnInit {
   }
 
   // para guardar
-  guardar() {
-    this.resena.created_at = new Date().toISOString();
-    
-    // mapeo para el formato de bd (S o N)
-    const dbData = {
-      ...this.resena,
-      tiene_spoiler: this.resena.tiene_spoiler ? 'S' : 'N'
-    };
+async guardar() {
+  // validacion: si califacion es es 0 (no seleccionó ninguna strella), muestra una advertencia
+  if (this.resena.calificacion === 0) {
+    const alert = await this.alertController.create({
+      header: 'Falta información',
+      message: 'Por favor, selecciona al menos una estrella para calificar la película.',
+      buttons: ['OK']
+    });
 
-    console.log('Datos listos para enviar a la BBDD:', dbData);
-    alert('¡Reseña guardada exitosamente!');
-    
-    // luego se devuelve a page pelicula
-    this.router.navigate(['/pelicula', this.resena.pelicula_id]);
+    await alert.present();
+    return; //para q el codigo de abajo no se ejecute
   }
+
+  // si pasa la validación, seguimos con el guardado normal
+  this.resena.created_at = new Date().toISOString();
+  
+  const dbData = {
+    ...this.resena,
+    comentario: this.resena.comentario || '', 
+    tiene_spoiler: this.resena.tiene_spoiler ? 'S' : 'N'
+  };
+
+  console.log('Enviando reseña validada:', dbData);
+  this.router.navigate(['/pelicula', this.resena.pelicula_id]);
+}
 }

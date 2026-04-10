@@ -1,17 +1,70 @@
 ion-content {
-    --background: #0B1222; // color fondo principal
+  --background: #0B1222;
+
+  .form-container {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center; // al centro vertical
+    align-items: center;     // centrado horizontal
+    
+    width: 100%;
+    min-height: 100%; //le dice al div que use todo el alto disponible
+    padding: 20px 0;
+  }
+
+  .registro-card {
+    background: #1A2131;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    margin: 0; 
+    padding: 10px;
+  }
+
 }
 
-.boton-resena {
-  --background:#4A90E2; // color boton
+
+ion-card-title {
+  font-weight: bold;
+  font-size: 1.6rem; 
+  margin-bottom: 30px; 
+  color: white;
+}
+
+.stars-row {
+  margin-bottom: 35px; //  espacio entre estrellas y el texto
+}
+
+.input-item {
+  --background: #232A3B; 
+  --border-radius: 12px;
+  --color: white;
+  margin-bottom: 30px; 
+  border: 1px solid #303747;
+}
+
+.spoiler-item {
+  --background: #11151e;
+  --border-radius: 10px;
+  margin-bottom: 35px; // espacio antes de btn
+}
+
+.main-btn {
+  --border-radius: 12px;
+  height: 55px; 
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.star-icon {
+  // color
+  color:  #e2b41d !important; 
   
-}
+  //porte
+  font-size: 2.2rem; 
 
-.spoiler{ 
-    --background:#4A90E2;}
-
-.star-icon{
-    color: #e2b41d;
-    font-size: 2.0rem;
-    margin: 0 5px;
+  // sepaaracion
+  margin: 0 5px;
 }

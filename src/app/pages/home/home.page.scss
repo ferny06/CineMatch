@@ -1,6 +1,18 @@
 
 ion-content {
     --background: #0B1222; // color fondo principal
+
+    .header-container {
+    // Añadimos un margen superior considerable
+    margin-top: 40px; 
+    
+    // Espacio a los lados para que no toque los bordes
+    padding: 0 20px; 
+    
+    display: flex;
+    flex-direction: column;
+    gap: 15px; // Separación automática entre el saludo y la barra
+  }
 }
 
 .container {
