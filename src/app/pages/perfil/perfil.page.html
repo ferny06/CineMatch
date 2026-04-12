@@ -1,65 +1,197 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar >
+  <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home" text=""></ion-back-button>
     </ion-buttons>
     <ion-title>Mi Perfil</ion-title>
+    <ion-buttons slot="end" *ngIf="puedeEditar && !modoEdicion">
+      <ion-button (click)="activarEdicion()">
+        <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="header-profile">
-    <ion-avatar>
-      <img [src]="usuario.avatar_url" />
-    </ion-avatar>
-    <h1>{{ usuario.nombre }} {{ usuario.apellido_1 }} {{ usuario.apellido_2 }}</h1>
-    <p>@{{ usuario.nombre_user }}</p>
-  </div>
 
-  <div class="info-section">
-    <ion-card mode="ios">
-      <ion-card-header>
-        <ion-card-subtitle>Biografía</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        {{ usuario.bio }}
-      </ion-card-content>
-    </ion-card>
+  <!-- ═══════════════════════════ MODO VISUALIZACIÓN ═══════════════════════════ -->
+  <ng-container *ngIf="!modoEdicion">
 
-    <ion-list lines="full">
-      <ion-item>
-        <ion-icon name="mail-outline" slot="start"></ion-icon>
-        <ion-label>
-          <h3>Correo</h3>
-          <p>{{ usuario.email }}</p>
-        </ion-label>
-      </ion-item>
+    <div class="header-profile">
+      <ion-avatar>
+        <img [src]="usuario?.avatar_url || 'assets/icon/favicon.png'" />
+      </ion-avatar>
+      <h1>{{ usuario?.nombre }} {{ usuario?.apellido_1 }} {{ usuario?.apellido_2 }}</h1>
+      <p>@{{ usuario?.nombre_user }}</p>
+    </div>
 
-      <ion-item>
-        <ion-icon name="navigate-outline" slot="start"></ion-icon>
-        <ion-label>
-          <h3>Radio de Búsqueda</h3>
-          <p>{{ usuario.radio_conex }} km</p>
-        </ion-label>
-      </ion-item>
+    <div class="info-section">
+      <ion-card mode="ios">
+        <ion-card-header>
+          <ion-card-subtitle>Biografía</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          {{ usuario?.bio || 'Sin biografía.' }}
+        </ion-card-content>
+      </ion-card>
 
-      <ion-item>
-        <ion-icon name="eye-outline" slot="start"></ion-icon>
-        <ion-label>
-          <h3>Estado de Búsqueda</h3>
-          <p>{{ usuario.busqueda_abierta === 'S' ? 'Abierta' : 'Cerrada' }}</p>
-        </ion-label>
-      </ion-item>
-    </ion-list>
-  </div>
+      <ion-list lines="full" style="background: transparent;">
+        <ion-item style="--background: transparent;">
+          <ion-icon name="mail-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Correo</ion-label>
+          <ion-input readonly="true" style="--color: white;" [value]="usuario?.email"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="calendar-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Fecha de Nacimiento</ion-label>
+          <ion-input readonly="true" style="--color: white;" [value]="usuario?.fecha_nacimiento || '—'"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="person-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Género</ion-label>
+          <ion-input readonly="true" style="--color: white;" [value]="usuario?.genero || '—'"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="navigate-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Radio de Búsqueda</ion-label>
+          <ion-input readonly="true" style="--color: white;" [value]="(usuario?.radio_conex || 0) + ' km'"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="eye-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Estado de Búsqueda</ion-label>
+          <ion-input readonly="true" style="--color: white;" [value]="usuario?.busqueda_abierta === 'S' ? 'Abierta' : 'Cerrada'"></ion-input>
+        </ion-item>
+      </ion-list>
+    </div>
+
+  </ng-container>
+
+  <!-- ═══════════════════════════ MODO EDICIÓN ══════════════════════════════════ -->
+  <ng-container *ngIf="modoEdicion">
+
+    <!-- Input de archivo oculto — se abre al pulsar el avatar -->
+    <input
+      #fileInput
+      type="file"
+      accept="image/*"
+      style="display: none"
+      (change)="onArchivoSeleccionado($event)"
+    />
+
+    <div class="header-profile">
+      <div class="avatar-editable" (click)="seleccionarFoto()">
+        <ion-avatar>
+          <img [src]="previewAvatar || usuario?.avatar_url || 'assets/icon/favicon.png'" />
+        </ion-avatar>
+        <div class="avatar-overlay">
+          <ion-icon name="camera-outline"></ion-icon>
+        </div>
+      </div>
+      <h1>{{ usuario?.nombre_user }}</h1>
+      <p>{{ usuario?.email }}</p>
+    </div>
+
+    <div class="info-section">
+
+      <!-- Biografía -->
+      <ion-card mode="ios">
+        <ion-card-header>
+          <ion-card-subtitle>Biografía</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-textarea
+            [(ngModel)]="editarForm.bio"
+            placeholder="Escribe algo sobre ti..."
+            rows="3"
+            autoGrow="true">
+          </ion-textarea>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-list lines="full" style="background: transparent;">
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="person-circle-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Nombre</ion-label>
+          <ion-input style="--color: white; --placeholder-color: #a0a0a0;" [(ngModel)]="editarForm.nombre" type="text" placeholder="Nombre"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="person-circle-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Primer Apellido</ion-label>
+          <ion-input style="--color: white; --placeholder-color: #a0a0a0;" [(ngModel)]="editarForm.apellido_1" type="text" placeholder="Primer apellido"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="person-circle-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Segundo Apellido</ion-label>
+          <ion-input style="--color: white; --placeholder-color: #a0a0a0;" [(ngModel)]="editarForm.apellido_2" type="text" placeholder="Segundo apellido"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="calendar-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Fecha de Nacimiento</ion-label>
+          <ion-input style="--color: white; --placeholder-color: #a0a0a0;" [(ngModel)]="editarForm.fecha_nacimiento" type="date"></ion-input>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="person-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Género</ion-label>
+          <ion-select style="--color: white; color: white;" [(ngModel)]="editarForm.genero" placeholder="Selecciona" interface="action-sheet">
+            <ion-select-option value="Masculino">Masculino</ion-select-option>
+            <ion-select-option value="Femenino">Femenino</ion-select-option>
+            <ion-select-option value="Otro">Otro</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="navigate-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label position="stacked">Radio de Búsqueda: {{ editarForm.radio_conex }} km</ion-label>
+          <ion-range
+            min="1"
+            max="50"
+            step="1"
+            color="warning"
+            pin="true"
+            [(ngModel)]="editarForm.radio_conex"
+            name="radio_conex">
+          </ion-range>
+        </ion-item>
+
+        <ion-item style="--background: transparent;">
+          <ion-icon name="eye-outline" slot="start" style="color: #e2b41d;"></ion-icon>
+          <ion-label style="color: white !important;">Búsqueda Abierta</ion-label>
+          <ion-toggle [(ngModel)]="editarForm.busqueda_abierta" slot="end" color="warning"></ion-toggle>
+        </ion-item>
+
+      </ion-list>
+
+      <!-- Botones de acción -->
+      <div class="edit-actions">
+        <ion-button expand="block" color="warning" (click)="guardarCambios()">
+          <ion-icon name="save-outline" slot="start"></ion-icon>
+          Guardar
+        </ion-button>
+        <ion-button expand="block" fill="outline" color="medium" (click)="cancelarEdicion()">
+          Cancelar
+        </ion-button>
+      </div>
+
+    </div>
+  </ng-container>
+
 </ion-content>
 
 
 <ion-footer class="ion-no-border">
-  <ion-toolbar  class="py-1">
+  <ion-toolbar class="py-1">
     <div class="d-flex justify-content-around align-items-center w-100">
-      
-      <div class="footer-item " (click)="irAHome()">
+
+      <div class="footer-item" (click)="irAHome()">
         <ion-icon src="assets/icon/home_icon.svg"></ion-icon>
         <span>Home</span>
       </div>
@@ -69,7 +201,7 @@
         <span>Ranking</span>
       </div>
 
-      <div class="footer-item active" (click)="irAPerfil()">
+      <div class="footer-item active">
         <ion-icon src="assets/icon/perfil_icon.svg"></ion-icon>
         <span>Perfil</span>
       </div>

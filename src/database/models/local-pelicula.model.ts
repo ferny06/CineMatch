@@ -30,6 +30,9 @@ export interface LocalPelicula {
   /** Promedio de votos en escala de 0.0 a 10.0 */
   promedio_votos?: number | null;
 
+  /** Código ISO 639-1 del idioma original (ej: "en", "es", "fr") */
+  idioma_original?: string | null;
+
   /**
    * Array de géneros serializado como JSON.
    * Formato: [{"id": 28, "nombre": "Acción"}, {"id": 12, "nombre": "Aventura"}]

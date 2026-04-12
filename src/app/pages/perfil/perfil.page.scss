@@ -29,6 +29,32 @@ ion-content {
   }
 }
 
+// Avatar clickeable en modo edición
+.avatar-editable {
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 15px;
+
+  ion-avatar {
+    margin-bottom: 0;
+  }
+
+  .avatar-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ion-icon {
+      font-size: 2rem;
+      color: #e2b41d;
+    }
+  }
+}
+
 .info-section {
   padding: 10px;
 
@@ -41,16 +67,23 @@ ion-content {
   ion-item {
     --background: transparent;
     --color: white;
-    
+
     ion-icon {
       color: #e2b41d;
     }
-    
-    h3 { color: white; }
-    p { color: #a0a0a0; }
+  }
+
+  // Label dorado para stacked (modo vista y edición)
+  ion-label[position="stacked"] {
+    color: #e2b41d !important;
+    font-size: 0.8rem;
+  }
+
+  // Label blanco para inline (toggle búsqueda abierta)
+  ion-label:not([position]) {
+    color: white !important;
   }
 }
-
 
 
 .footer-item {
@@ -62,14 +95,12 @@ ion-content {
     justify-content: center;
     color: #ffffff;
     border: none !important;
-    
-    
-    
+
     ion-icon {
         font-size: 60px;
         margin-bottom: 2px;
     }
-    
+
     span {
         font-size: 10px;
     }
@@ -83,4 +114,15 @@ ion-content {
 // UTILIDADES BOOTSTRAP (FORZADAS)
 .d-flex {
     display: flex !important;
+}
+
+// Botones guardar / cancelar
+.edit-actions {
+    display: flex;
+    gap: 10px;
+    padding: 16px;
+
+    ion-button {
+        flex: 1;
+    }
 }

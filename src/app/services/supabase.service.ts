@@ -65,18 +65,6 @@ interface UsuarioRow {
   longitud?: number | null;
 }
 
-/** Fila de la tabla `pelicula` en Supabase */
-interface PeliculaRow {
-  tmdb_id: number;
-  titulo: string;
-  sinopsis?: string | null;
-  fecha_estreno?: string | null;
-  poster_url?: string | null;
-  duracion_min?: number | null;
-  promedio_votos?: number | null;
-  idioma_original?: string | null;
-}
-
 /** Fila de la tabla `lista_peliculas` en Supabase */
 interface ListaRow {
   usuario_id: string;
@@ -234,14 +222,16 @@ export class SupabaseService {
    */
   async upsertPelicula(pelicula: LocalPelicula): Promise<SupabaseResult<string>> {
     // ── Paso 1: Upsert de la película ─────────────────────────────────────────
-    const peliculaPayload: PeliculaRow = {
-      tmdb_id:        pelicula.tmdb_id!,
-      titulo:         pelicula.titulo,
-      sinopsis:       pelicula.sinopsis       ?? null,
-      fecha_estreno:  pelicula.fecha_estreno  ?? null,
-      poster_url:     pelicula.poster_url     ?? null,
-      duracion_min:   pelicula.duracion_min   ?? null,
-      promedio_votos: pelicula.promedio_votos ?? null,
+    const peliculaPayload = {
+      id:              pelicula.id,              // UUID local = UUID Supabase (primera inserción)
+      tmdb_id:         pelicula.tmdb_id!,
+      titulo:          pelicula.titulo,
+      sinopsis:        pelicula.sinopsis        ?? null,
+      fecha_estreno:   pelicula.fecha_estreno   ?? null,
+      poster_url:      pelicula.poster_url      ?? null,
+      duracion_min:    pelicula.duracion_min    ?? null,
+      promedio_votos:  pelicula.promedio_votos  ?? null,
+      idioma_original: pelicula.idioma_original ?? null,
     };
 
     const { data: pelData, error: pelError } = await this.supabase
@@ -269,34 +259,48 @@ export class SupabaseService {
       }
 
       for (const genero of generos) {
-        // ── Paso 2a: Upsert del género (por tmdb_id) ─────────────────────────
-        const { data: genData, error: genError } = await this.supabase
+        // ── Paso 2a: Obtener o insertar el género por tmdb_id ────────────────
+        // Se usa SELECT + INSERT en lugar de upsert onConflict porque el upsert
+        // requiere un UNIQUE constraint en la columna de conflicto, que puede no
+        // estar definido en todos los entornos de Supabase del proyecto.
+        let { data: genData } = await this.supabase
           .from('genero')
-          .upsert(
-            {
+          .select('id')
+          .eq('tmdb_id', genero.id)
+          .maybeSingle();
+
+        if (!genData) {
+          const { data: insertData, error: insertError } = await this.supabase
+            .from('genero')
+            .insert({
               nombre:  genero.nombre,
-              // `slug` es NOT NULL en Supabase; lo generamos desde el nombre
-              // normalizando a minúsculas y eliminando acentos/caracteres especiales.
               slug:    this.generarSlug(genero.nombre),
               tmdb_id: genero.id,
-            },
-            { onConflict: 'tmdb_id' }
-          )
-          .select('id')
-          .single();
+            })
+            .select('id')
+            .single();
 
-        if (genError) {
-          console.warn('[SupabaseService] Error al upsert género:', genError.message);
-          continue; // Continuar con el siguiente género sin abortar la película
+          if (insertError) {
+            console.warn('[SupabaseService] Error al insertar género:', insertError.message);
+            continue; // Continuar con el siguiente género sin abortar la película
+          }
+
+          genData = insertData;
         }
 
-        // ── Paso 2b: Upsert del pivote pelicula_genero ───────────────────────
-        await this.supabase
+        // ── Paso 2b: Insertar pivote pelicula_genero si no existe ────────────
+        const { data: pivoteExiste } = await this.supabase
           .from('pelicula_genero')
-          .upsert(
-            { pelicula_id: peliculaServerId, genero_id: genData.id },
-            { onConflict: 'pelicula_id,genero_id' }
-          );
+          .select('pelicula_id')
+          .eq('pelicula_id', peliculaServerId)
+          .eq('genero_id', genData!.id)
+          .maybeSingle();
+
+        if (!pivoteExiste) {
+          await this.supabase
+            .from('pelicula_genero')
+            .insert({ pelicula_id: peliculaServerId, genero_id: genData!.id });
+        }
       }
     }
 
@@ -563,6 +567,7 @@ export class SupabaseService {
    * @returns Slug normalizado (ej: "accion", "drama")
    */
   private generarSlug(nombre: string): string {
+    if (!nombre) return '';
     return nombre
       .toLowerCase()
       .normalize('NFD')                      // Separar letras de sus acentos

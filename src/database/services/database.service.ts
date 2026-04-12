@@ -117,16 +117,17 @@ export class DatabaseService {
       },
       {
         statement: `CREATE TABLE IF NOT EXISTS local_pelicula (
-          id              TEXT NOT NULL PRIMARY KEY,
-          tmdb_id         INTEGER UNIQUE,
-          titulo          TEXT NOT NULL,
-          sinopsis        TEXT,
-          poster_url      TEXT,
-          fecha_estreno   TEXT,
-          duracion_min    INTEGER,
-          promedio_votos  REAL,
-          generos_json    TEXT,
-          synced_at       TEXT NOT NULL
+          id               TEXT NOT NULL PRIMARY KEY,
+          tmdb_id          INTEGER UNIQUE,
+          titulo           TEXT NOT NULL,
+          sinopsis         TEXT,
+          poster_url       TEXT,
+          fecha_estreno    TEXT,
+          duracion_min     INTEGER,
+          promedio_votos   REAL,
+          idioma_original  TEXT,
+          generos_json     TEXT,
+          synced_at        TEXT NOT NULL
         );`,
         values: [],
       },
@@ -161,6 +162,7 @@ export class DatabaseService {
           comentario    TEXT,
           tiene_spoiler TEXT NOT NULL DEFAULT 'N' CHECK(tiene_spoiler IN ('S','N')),
           sync_status   TEXT NOT NULL DEFAULT 'pending',
+          synced_at     TEXT,
           created_at    TEXT NOT NULL
         );`,
         values: [],
@@ -200,6 +202,11 @@ export class DatabaseService {
       { statement: `CREATE INDEX IF NOT EXISTS idx_cola_tabla      ON cola_sync(tabla);`,          values: [] },
     ], false);
 
+    // Migración incremental: solo agrega la columna si aún no existe.
+    // PRAGMA table_info evita lanzar errores nativos visibles en logcat.
+    await this.agregarColumnaSiFalta('local_pelicula', 'idioma_original', 'TEXT');
+    await this.agregarColumnaSiFalta('local_resena',   'synced_at',       'TEXT');
+
     console.log('[DatabaseService] Tablas creadas o verificadas correctamente.');
   }
 
@@ -217,6 +224,18 @@ export class DatabaseService {
       );
     }
     return this.db;
+  }
+
+  /**
+   * Agrega una columna a una tabla solo si aún no existe.
+   * Usa PRAGMA table_info para evitar lanzar errores nativos visibles en logcat.
+   */
+  private async agregarColumnaSiFalta(tabla: string, columna: string, tipo: string): Promise<void> {
+    const info = await this.db.query(`PRAGMA table_info(${tabla})`);
+    const existe = info.values?.some((col: any) => col.name === columna);
+    if (!existe) {
+      await this.db.run(`ALTER TABLE ${tabla} ADD COLUMN ${columna} ${tipo};`);
+    }
   }
 
   /**

@@ -130,16 +130,21 @@ export class ColaService {
     console.log(`[ColaService] Encolado: ${operacion} en ${tabla} (id: ${registroId})`);
 
     // ── Paso 2: Sync inmediato si hay red ─────────────────────────────────────
-    // No usamos await para no bloquear la respuesta al usuario:
-    // el dato ya está guardado localmente (Paso 1), el sync es un bonus.
+    // Se usa setTimeout(0) para diferir procesarCola() a la siguiente macrotarea.
+    // Esto garantiza que todos los encolar() del caller terminen (y sus INSERTs
+    // en cola_sync se completen) antes de que el SELECT de procesarCola() se ejecute.
+    // Sin el defer, el primer encolar() dispara el SELECT antes de que el segundo
+    // encolar() inserte su ítem, dejando registros sin procesar en ese ciclo.
     if (this.networkService.estaConectado) {
       console.log('[ColaService] Red disponible — iniciando sync inmediato...');
 
-      // .catch() evita que una promesa rechazada genere un UnhandledPromiseRejection.
-      // Los errores individuales de cada ítem son manejados por SyncService.
-      this.syncService.procesarCola().catch((err) => {
-        console.error('[ColaService] Error en sync inmediato:', err);
-      });
+      setTimeout(() => {
+        // .catch() evita que una promesa rechazada genere un UnhandledPromiseRejection.
+        // Los errores individuales de cada ítem son manejados por SyncService.
+        this.syncService.procesarCola().catch((err) => {
+          console.error('[ColaService] Error en sync inmediato:', err);
+        });
+      }, 0);
     } else {
       // Sin red: el ítem quedará pendiente hasta que NetworkService detecte
       // conectividad o hasta el próximo arranque de la app.

@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { DatabaseService } from 'src/database/services/database.service';
 // SyncService orquesta la sincronización entre SQLite local y Supabase central.
 import { SyncService } from './services/sync.service';
 // NetworkService detecta cambios de conectividad y dispara sync automáticamente.
 import { NetworkService } from './services/network.service';
+import { SupabaseService } from './services/supabase.service';
 
 @Component({
   selector: 'app-root',
@@ -14,9 +16,11 @@ import { NetworkService } from './services/network.service';
 export class AppComponent implements OnInit {
 
   constructor(
+    private router: Router,
     private databaseService: DatabaseService,
     private syncService: SyncService,
     private networkService: NetworkService,
+    private supabaseService: SupabaseService,
   ) {}
 
   /**
@@ -49,5 +53,14 @@ export class AppComponent implements OnInit {
     // Si no hay red, procesarCola() retorna inmediatamente (cola vacía en Supabase).
     // Si hay red, envía todos los pendientes en orden FK-safe.
     await this.syncService.procesarCola();
+
+    // Paso 4: verificar si existe una sesión activa de Supabase Auth persistida
+    // en localStorage del WebView. Si la hay, el usuario ya inició sesión antes
+    // y no debe volver a la pantalla de login.
+    const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
+    if (session) {
+      console.log('[AppComponent] Sesión activa encontrada — redirigiendo a home.');
+      this.router.navigate(['/home'], { replaceUrl: true });
+    }
   }
 }

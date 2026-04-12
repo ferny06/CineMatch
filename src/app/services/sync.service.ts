@@ -328,11 +328,48 @@ export class SyncService {
       throw new Error(`upsertPelicula falló: ${error}`);
     }
 
-    // Guardar el UUID de Supabase como server_id en el registro local
-    await this.actualizarServerId(DB_TABLES.PELICULA, 'id', item.registro_id, serverId);
-    await this.marcarCompletado(item.id!);
+    const localId = item.registro_id;
 
-    console.log(`[SyncService] ✓ Película ${item.registro_id} → Supabase id ${serverId}.`);
+    if (serverId !== localId) {
+      // La película ya existía en Supabase con un UUID distinto al generado localmente.
+      // Hay que reemplazar el UUID local por el de Supabase en todas las tablas
+      // que lo referencian para que las FK funcionen correctamente.
+      console.warn(
+        `[SyncService] UUID local (${localId}) difiere del UUID Supabase (${serverId}). ` +
+        `Actualizando referencias locales...`
+      );
+
+      await db.run(
+        `UPDATE ${DB_TABLES.PELICULA} SET id = ?, synced_at = ? WHERE id = ?`,
+        [serverId, new Date().toISOString(), localId]
+      );
+
+      // Cascadear el nuevo UUID a local_resena y local_lista
+      await db.run(
+        `UPDATE ${DB_TABLES.RESENA} SET pelicula_id = ? WHERE pelicula_id = ?`,
+        [serverId, localId]
+      );
+      await db.run(
+        `UPDATE ${DB_TABLES.LISTA} SET pelicula_id = ? WHERE pelicula_id = ?`,
+        [serverId, localId]
+      );
+
+      // Actualizar el registro_id en cola_sync para que ítems futuros apunten al UUID correcto
+      await db.run(
+        `UPDATE ${DB_TABLES.COLA_SYNC} SET registro_id = ? WHERE tabla = ? AND registro_id = ?`,
+        [serverId, DB_TABLES.PELICULA, localId]
+      );
+    } else {
+      // UUID local ya coincide con Supabase — solo actualizar synced_at
+      // (local_pelicula no tiene columna sync_status, solo synced_at)
+      await db.run(
+        `UPDATE ${DB_TABLES.PELICULA} SET synced_at = ? WHERE id = ?`,
+        [new Date().toISOString(), localId]
+      );
+    }
+
+    await this.marcarCompletado(item.id!);
+    console.log(`[SyncService] ✓ Película ${localId} → Supabase id ${serverId}.`);
   }
 
   /**
