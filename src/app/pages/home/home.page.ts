@@ -14,6 +14,7 @@ export class HomePage implements OnInit {
   // variables
   peliculas: any[] = [];  // PELICULAS Q SE MUESTRAN EN PANTALLA
   peliculasCopia: any[] = []; //RESPALDO DE SEGURIDAD QUE ENVIA LA API Y QUE NO CAMBIA
+  nombre_user: string = 'Fff';
 
   constructor(private movieService: MovieService,
               private router: Router
@@ -31,8 +32,15 @@ export class HomePage implements OnInit {
         console.error('Error al cargar pelis:', err);
       }
     });
+  
+    // para tener nombre user al saludo
+    this.cargarDatosUsuario();
   }
 
+  cargarDatosUsuario() {
+    
+    console.log('Nombre de usuario listo para mostrar:', this.nombre_user);
+  }
   // FUNCIÓN PARA BUSQUEDA
   buscarPelicula(event: any) {
     const texto = event.detail.value.toLowerCase(); 
@@ -61,5 +69,6 @@ export class HomePage implements OnInit {
   // a la ruta pasando el id que viene de la api
   this.router.navigate(['/pelicula', peliculaId]);
 }
-} 
+}
+
 

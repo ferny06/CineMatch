@@ -35,6 +35,14 @@ const routes: Routes = [
     path: 'crear-resena/:id',
     loadChildren: () => import('./pages/crear-resena/crear-resena.module').then( m => m.CrearResenaPageModule)
   },
+  {
+    path: 'sugerencias',
+    loadChildren: () => import('./pages/sugerencias/sugerencias.module').then( m => m.SugerenciasPageModule)
+  },
+  {
+    path: 'mensajes',
+    loadChildren: () => import('./pages/mensajes/mensajes.module').then( m => m.MensajesPageModule)
+  },
 ];
 
 @NgModule({

@@ -13,6 +13,18 @@ ion-content {
     flex-direction: column;
     gap: 15px; // Separación automática entre el saludo y la barra
   }
+
+  .user-greeting {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: white;
+  }
 }
 
 .container {
@@ -68,7 +80,7 @@ ion-content {
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
-
+}
 //footer me falta cambiarlo aunn
 ion-footer {
     ion-toolbar {

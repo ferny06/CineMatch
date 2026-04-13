@@ -261,4 +261,37 @@ export class PerfilPage implements OnInit {
   irAHome(): void {
     this.router.navigate(['/home']);
   }
+
+
+  async cerrarSesion() {
+    const alert = await this.alertController.create({
+      header: 'Cerrar Sesión',
+      message: '¿Estás seguro de que quieres salir de CineMatch?',
+      buttons: [
+        {
+          text: 'Cancelar',
+          role: 'cancel',
+          cssClass: 'secondary'
+        }, {
+          text: 'Sí, salir',
+          handler: () => {
+            this.ejecutarLogout();
+          }
+        }
+      ]
+    });
+
+    await alert.present();
+  }
+
+  private async ejecutarLogout() {
+    try {
+      
+      console.log('Sesión terminada con éxito');
+      this.router.navigate(['/login'], { replaceUrl: true });
+      
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
+    }
+  }
 }

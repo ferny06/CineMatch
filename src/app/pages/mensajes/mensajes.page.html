@@ -1,0 +1,41 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+        <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis Mensajes</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list lines="full" style="background: transparent;">
+    
+    <ion-item *ngFor="let m of mensajes" (click)="irAConversacion(m.local_conversacion_id)" style="--background: transparent;">
+      <ion-avatar slot="start">
+        <img src="assets/icon/favicon.png" />
+      </ion-avatar>
+
+      <ion-label>
+        <div style="display: flex; justify-content: space-between;">
+          <h2 style="color: white; font-weight: 600;">Usuario: {{ m.emisor_id }}</h2>
+          <span style="color: #8e94a0; font-size: 0.8rem;">{{ m.created_at }}</span>
+        </div>
+        
+        <p [style.color]="m.leido === 'N' ? 'white' : '#8e94a0'"
+           [style.font-weight]="m.leido === 'N' ? 'bold' : 'normal'">
+          {{ m.contenido }}
+        </p>
+      </ion-label>
+
+      <div slot="end" style="text-align: right;">
+        <ion-icon 
+          [name]="m.sync_status === 'SINCRO' ? 'cloud-done' : 'cloud-upload'"
+          [color]="m.sync_status === 'SINCRO' ? 'success' : 'warning'">
+        </ion-icon>
+        <br>
+        <small style="color: #444;" *ngIf="m.server_id">ID: {{ m.server_id }}</small>
+      </div>
+    </ion-item>
+
+  </ion-list>
+</ion-content>

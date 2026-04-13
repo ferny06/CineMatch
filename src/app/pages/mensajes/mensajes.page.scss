@@ -1,0 +1,78 @@
+ion-content {
+  
+  --background: #0B1222; 
+}
+
+ion-list {
+  background: transparent !important;
+  padding-top: 8px;
+}
+
+ion-item {
+  --background: transparent;
+  --color: white;
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+  margin-bottom: 4px;
+
+  ion-avatar {
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
+  }
+}
+
+// Para el emisor_id o nombre que sale arriba
+h2 {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin: 0;
+  color: white;
+}
+
+
+span {
+  font-size: 0.75rem;
+  color: #8e94a0;
+}
+
+
+.msg-unread {
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem;
+  margin: 4px 0 0 0;
+}
+
+.msg-read {
+  color: #8e94a0 !important;
+  font-weight: 400;
+  font-size: 0.9rem;
+  margin: 4px 0 0 0;
+}
+
+// contenedor de los iconos de sincronización (sync_status)
+div[slot="end"] {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+
+  ion-icon {
+    font-size: 1.2rem;
+  }
+
+  small {
+    font-size: 0.65rem;
+    color: #4a5568;
+    font-family: monospace; // para los ids
+  }
+}
+
+// Efecto de las opciones al deslizar (por si usas ion-item-sliding)
+ion-item-options {
+  ion-item-option {
+    --background: #ff4961;
+    color: white;
+  }
+}

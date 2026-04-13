@@ -126,3 +126,28 @@ ion-content {
         flex: 1;
     }
 }
+
+//boton cerrarsesion
+.logout-container {
+  margin-top: 35px;    
+  margin-bottom: 60px; 
+  display: flex;
+  justify-content: center;
+  width: 100%;
+
+  .btn-logout-final {
+    --color: #4A90E2 !important; 
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-transform: none;      
+    --ripple-color: #4A90E2;   
+    
+    --background: transparent;
+    --background-activated: transparent;
+    --background-focused: transparent;
+  }
+}
+
+.info-section {
+  padding-bottom: 10px;
+}

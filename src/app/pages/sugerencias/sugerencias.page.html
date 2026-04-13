@@ -1,0 +1,56 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>CineMatch Connect</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="container mt-4">
+    
+    <div class="header-section px-3">
+      <h2 class="text-white fw-bold">Gente cerca de ti</h2>
+      <p class="text-muted">
+        Buscando en tu radio de <span class="text-warning">{{ usuarioActual.radio_conex }} km</span>
+      </p>
+    </div>
+
+    <div class="suggestions-list mt-3">
+      
+      <ion-card class="user-card" *ngFor="let sugerido of listaSugeridos">
+        <ion-item lines="none" class="bg-transparent">
+          
+          <ion-avatar slot="start">
+            <img [src]="sugerido.avatar_url || 'assets/icon/perfil_default.png'" 
+                 alt="Avatar de {{ sugerido.nombre }}">
+          </ion-avatar>
+
+          <ion-label>
+            <h2 class="text-white fw-bold">{{ sugerido.nombre }}</h2>
+            <p class="distancia-text">A {{ sugerido.distancia }} km de ti</p>
+          </ion-label>
+
+          <ion-button fill="clear" slot="end" class="btn-add">
+            <ion-icon name="person-add-outline"></ion-icon>
+          </ion-button>
+        </ion-item>
+
+        <ion-card-content class="pt-0">
+          <div class="tags-container">
+            <ion-badge color="dark">Acción</ion-badge>
+            <ion-badge color="dark">Drama</ion-badge>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+    </div>
+
+    <div *ngIf="listaSugeridos.length === 0" class="ion-text-center mt-5 px-4">
+      <ion-icon name="people-outline" style="font-size: 4rem; color: #2A3141;"></ion-icon>
+      <p class="text-muted">No encontramos cinéfilos en tu radio actual. ¡Prueba aumentando tu radio de conexión !</p>
+    </div>
+
+  </div>
+</ion-content>

@@ -1,0 +1,95 @@
+ion-content {
+ 
+  --background: #0B1222;
+
+  .container {
+    padding-bottom: 20px;
+  }
+
+  .header-section {
+    margin-bottom: 10px;
+    
+    h2 {
+      font-size: 1.6rem;
+      letter-spacing: 0.5px;
+    }
+    
+    p {
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+  }
+
+  // estilo tarjeta usuarios
+  .user-card {
+    background: #1A2131; // color secundario de tarjeta
+    border-radius: 16px;
+    margin: 0 10px 15px 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid #2A3141;
+
+    ion-item {
+      --padding-start: 10px;
+      --inner-padding-end: 10px;
+      margin: 5px 0;
+    }
+
+    // Avatar 
+    ion-avatar {
+      width: 55px;
+      height: 55px;
+      border: 2px solid #303747;
+    }
+
+    ion-label {
+      h2 {
+        font-size: 1.1rem;
+        margin-bottom: 4px;
+      }
+      
+      .distancia-text {
+        color: #4A90E2;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+    }
+
+    // btn de agregar
+    .btn-add {
+      ion-icon {
+        font-size: 1.6rem;
+      }
+    }
+  }
+
+  // contenedor de etiquetas d generos en cmun
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 5px;
+
+    ion-badge {
+      --background: #232A3B;
+      --color: #4A90E2; // Un azul suave para los géneros
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+  }
+}
+
+// estilo toolbar superior
+ion-toolbar {
+  --background: #0B1222;
+  --color: white;
+  --border-style: none;
+
+  ion-title {
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
