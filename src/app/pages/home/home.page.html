@@ -32,12 +32,18 @@
     <div class="container">
       <p class="section-title">Populares en tu ciudad</p>
     </div>
-    
+
     <div class="scroll-horizontal ps-3">
       <div class="movie-card" *ngFor="let peli of peliculas.slice(10, 20)" (click)="verDetalle(peli.id)">
         <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
       </div>
     </div>
+  </div>
+
+  <div class="container mb-5 d-flex gap-2 justify-content-center">
+    <button (click)="irAMisListas()" style="background-color:#e50914; color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:0.9rem; font-weight:600; cursor:pointer;">Mis Listas</button>
+    <button (click)="irASugerencias()" style="background-color:#e50914; color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:0.9rem; font-weight:600; cursor:pointer;">Sugerencias</button>
+    <button (click)="irAMensajes()" style="background-color:#e50914; color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:0.9rem; font-weight:600; cursor:pointer;">Mensajes</button>
   </div>
 </ion-content>
 
@@ -50,7 +56,7 @@
         <span>Home</span>
       </div>
 
-      <div class="footer-item">
+      <div class="footer-item" (click)="irARanking()">
         <ion-icon src="assets/icon/ranking_icon.svg"></ion-icon>
         <span>Ranking</span>
       </div>

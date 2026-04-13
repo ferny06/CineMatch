@@ -8,30 +8,27 @@ ion-content {
   --background: #0B1222 !important;
 }
 
-ion-segment {
-  margin: 12px 16px;
-  background: #1c2536 !important;
-  border-radius: 8px;
+.add-btn-container {
+  padding: 16px;
+}
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 16px auto; 
-  width: 90%;
-  
-  ion-segment-button {
-    --color: #999;
-    --color-checked: #ffffff;
-    --indicator-color: #4A90E2; 
-    font-weight: 600;
-    flex: 1; 
-    max-width: 170px;
-  }
+.add-lista-btn {
+  --border-color: #4A90E2;
+  --color: #4A90E2;
+  --border-radius: 10px;
+}
+
+.empty-container {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 60vh; color: #8899ac;
+  ion-icon { font-size: 3.5rem; margin-bottom: 12px; }
+  p { font-size: 0.95rem; }
 }
 
 .movie-card {
   margin: 8px 4px;
-  background: #161f2e !important; 
+  background: #161f2e !important;
   border-radius: 12px;
   border: 1px solid #2a3548;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);

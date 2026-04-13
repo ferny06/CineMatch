@@ -43,6 +43,10 @@ const routes: Routes = [
     path: 'mensajes',
     loadChildren: () => import('./pages/mensajes/mensajes.module').then( m => m.MensajesPageModule)
   },
+  {
+    path: 'ranking',
+    loadChildren: () => import('./pages/ranking/ranking.module').then( m => m.RankingPageModule)
+  },
 ];
 
 @NgModule({

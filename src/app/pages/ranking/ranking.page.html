@@ -1,0 +1,83 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Mis Reseñas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div *ngIf="resenasVistas.length === 0" class="empty-container">
+    <ion-icon name="star-outline"></ion-icon>
+    <p>Aún no has reseñado ninguna película</p>
+  </div>
+
+  <ion-grid *ngIf="resenasVistas.length > 0">
+    <ion-row>
+      <ion-col size="6" *ngFor="let r of resenasVistas">
+        <ion-card class="movie-card" (click)="abrirModal(r)">
+          <div class="poster-container">
+            <img [src]="r.poster_url" />
+            <ion-badge [color]="r.sync_status === 'synced' ? 'success' : 'warning'">
+              <ion-icon [name]="r.sync_status === 'synced' ? 'cloud-done' : 'cloud-upload'"></ion-icon>
+            </ion-badge>
+            <ion-badge *ngIf="r.tiene_spoiler === 'S'" class="spoiler-badge" color="danger">SPOILER</ion-badge>
+          </div>
+          <ion-card-header>
+            <ion-card-subtitle>{{ r.titulo }}</ion-card-subtitle>
+            <div class="stars-mini">
+              <ion-icon
+                *ngFor="let s of [1,2,3,4,5]"
+                [name]="r.calificacion >= s ? 'star' : 'star-outline'"
+                class="star-mini-icon">
+              </ion-icon>
+            </div>
+            <p class="date-text">{{ r.created_at | date:'dd/MM/yyyy' }}</p>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Modal detalle de reseña -->
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarModal()" [breakpoints]="[0, 0.75]" [initialBreakpoint]="0.75">
+    <ng-template>
+      <div class="modal-content" *ngIf="resenaSeleccionada">
+        <div class="modal-handle"></div>
+
+        <div class="modal-header">
+          <img [src]="resenaSeleccionada.poster_url" class="modal-poster" />
+          <div class="modal-title-block">
+            <h2>{{ resenaSeleccionada.titulo }}</h2>
+            <ion-badge *ngIf="resenaSeleccionada.tiene_spoiler === 'S'" color="danger">SPOILER</ion-badge>
+          </div>
+        </div>
+
+        <div class="modal-stars">
+          <ion-icon
+            *ngFor="let s of [1,2,3,4,5]"
+            [name]="resenaSeleccionada.calificacion >= s ? 'star' : 'star-outline'"
+            class="star-large-icon">
+          </ion-icon>
+          <span class="rating-label">{{ resenaSeleccionada.calificacion }}/5</span>
+        </div>
+
+        <p class="modal-comentario" *ngIf="resenaSeleccionada.comentario">
+          {{ resenaSeleccionada.comentario }}
+        </p>
+        <p class="modal-comentario sin-comentario" *ngIf="!resenaSeleccionada.comentario">
+          Sin comentario
+        </p>
+
+        <p class="modal-fecha">Escrita el {{ resenaSeleccionada.created_at | date:'dd/MM/yyyy, HH:mm' }}</p>
+
+        <ion-button expand="block" fill="outline" class="modal-close-btn" (click)="cerrarModal()">
+          Cerrar
+        </ion-button>
+      </div>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>

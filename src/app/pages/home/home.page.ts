@@ -69,6 +69,22 @@ export class HomePage implements OnInit {
   // a la ruta pasando el id que viene de la api
   this.router.navigate(['/pelicula', peliculaId]);
 }
+
+  irAMisListas() {
+    this.router.navigate(['/mis-listas']);
+  }
+
+  irASugerencias() {
+    this.router.navigate(['/sugerencias']);
+  }
+
+  irAMensajes() {
+    this.router.navigate(['/mensajes']);
+  }
+
+  irARanking() {
+    this.router.navigate(['/ranking']);
+  }
 }
 
 

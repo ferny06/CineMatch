@@ -1,0 +1,79 @@
+:host {
+  display: block;
+  height: 100%;
+  --background: #0B1222;
+}
+
+ion-content {
+  --background: #0B1222 !important;
+}
+
+.empty-container {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 60vh; color: #8899ac;
+  ion-icon { font-size: 3.5rem; margin-bottom: 12px; }
+  p { font-size: 0.95rem; }
+}
+
+.movie-card {
+  margin: 8px 4px;
+  background: #161f2e !important;
+  border-radius: 12px;
+  border: 1px solid #2a3548;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+
+  .poster-container {
+    position: relative;
+    img { height: 250px; object-fit: cover; width: 100%; display: block; }
+    ion-badge {
+      position: absolute; top: 8px; right: 8px;
+      border-radius: 50%; height: 24px; width: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+  }
+
+  ion-card-header {
+    padding: 10px 8px;
+    ion-card-subtitle { color: #ffffff !important; font-weight: 700; font-size: 0.9rem; }
+    .date-text { font-size: 0.7rem; color: #8899ac; margin-top: 4px; }
+  }
+}
+
+.stars-mini { display: flex; gap: 2px; margin: 4px 0; }
+.star-mini-icon { color: #e2b41d; font-size: 0.85rem; }
+
+.spoiler-badge {
+  position: absolute; bottom: 8px; left: 8px;
+  font-size: 0.6rem; font-weight: 700; border-radius: 4px;
+}
+
+.modal-content {
+  background: #0B1222; padding: 20px;
+  height: 100%; overflow-y: auto; color: white;
+}
+
+.modal-handle {
+  width: 40px; height: 4px; background: #2a3548;
+  border-radius: 2px; margin: 0 auto 20px;
+}
+
+.modal-header {
+  display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px;
+  .modal-poster { width: 80px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #2a3548; }
+  .modal-title-block { flex: 1; h2 { font-size: 1.1rem; font-weight: 700; margin: 0 0 8px; } }
+}
+
+.modal-stars { display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
+.star-large-icon { color: #e2b41d; font-size: 1.8rem; }
+.rating-label { font-size: 1rem; color: #8899ac; margin-left: 8px; }
+
+.modal-comentario {
+  font-size: 0.95rem; color: #c8d3e0; line-height: 1.6;
+  background: #161f2e; border: 1px solid #2a3548;
+  border-radius: 10px; padding: 14px; margin-bottom: 16px;
+  &.sin-comentario { color: #8899ac; font-style: italic; }
+}
+
+.modal-fecha { font-size: 0.75rem; color: #8899ac; margin-bottom: 24px; }
+.modal-close-btn { --border-color: #2a3548; --color: #8899ac; --border-radius: 10px; }
