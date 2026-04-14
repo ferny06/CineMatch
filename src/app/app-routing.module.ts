@@ -46,7 +46,11 @@ const routes: Routes = [
   {
     path: 'ranking',
     loadChildren: () => import('./pages/ranking/ranking.module').then( m => m.RankingPageModule)
+  },  {
+    path: 'perfil-amigo',
+    loadChildren: () => import('./pages/perfil-amigo/perfil-amigo.module').then( m => m.PerfilAmigoPageModule)
   },
+
 ];
 
 @NgModule({

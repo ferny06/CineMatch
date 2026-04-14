@@ -1,137 +1,72 @@
-
 ion-content {
-    --background: #0B1222; // color fondo principal
+  --background: #0B1222; 
 
-    .header-container {
-    // Añadimos un margen superior considerable
+  .header-container {
     margin-top: 40px; 
-    
-    // Espacio a los lados para que no toque los bordes
     padding: 0 20px; 
-    
     display: flex;
     flex-direction: column;
-    gap: 15px; // Separación automática entre el saludo y la barra
+    gap: 15px; 
   }
 
   .user-greeting {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  
-  h2 {
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: white;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    h2 {
+      margin: 0;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: white;
+    }
   }
-}
 
-.container {
+  .container {
     padding-left: 15px;
     padding-right: 15px;
-}
+  }
 
-//buscador
-.custom-search {
+  .custom-search {
     --border-radius: 50px;
     --background: #ffffff;
     --placeholder-color: #666;
     --icon-color: #666;
     padding: 0;
     height: 45px;
-    --color: #000000 !important; // color de cuando escribo en barra de busqueda 
-}
+    --color: #000000 !important; 
+  }
 
-
-.section-title {
+  .section-title {
     color: white;
     font-size: 0.9rem;
     font-weight: 400;
     margin-bottom: 18px;
-    border-bottom: 1px solid #30363d; // linea
+    border-bottom: 1px solid #30363d; 
     padding-bottom: 8px;
-}
+  }
 
-
-.scroll-horizontal {
+  .scroll-horizontal {
     display: flex;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
     gap: 12px;
     padding-bottom: 15px;
-    
-    &::-webkit-scrollbar {
-        display: none; 
-    }
-}
+    &::-webkit-scrollbar { display: none; }
+  }
 
-.movie-card {
+  .movie-card {
     flex: 0 0 auto;
-    width: 130px; // para ancho fijo de peli
-    scroll-snap-align: start;
-}
+    width: 130px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    &:active { transform: scale(0.95); }
+  }
 
-.figma-poster {
+  .figma-poster {
     width: 100%;
     height: 190px;
     object-fit: cover;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-}
-}
-//footer me falta cambiarlo aunn
-ion-footer {
-    ion-toolbar {
-        --background: #161b22;
-        --border-style: none;
-    }
-}
-
-.footer-item {
-    background: #0B1222 !important;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    border: none !important;
-    
-    
-    
-    ion-icon {
-        font-size: 60px;
-        margin-bottom: 2px;
-    }
-    
-    span {
-        font-size: 10px;
-    }
-
-    &.active {
-        color: #e2b41d; //   para indicar en que page estamos
-    }
-}
-
-
-// UTILIDADES BOOTSTRAP (FORZADAS)
-.d-flex {
-    display: flex !important;
-}
-
-.mt-5 {
-    margin-top: 3.5rem !important; 
-    margin-bottom: 2rem;
-}
-
-//para hacer efecto cuando uno le da clic a la pelicula
-.movie-card {
-  transition: transform 0.2s ease;
-  cursor: pointer;
-
-  &:active {
-    transform: scale(0.95); // se achica un 5% al tocarla para ver detalle peli
   }
 }
+

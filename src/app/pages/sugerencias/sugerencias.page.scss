@@ -93,3 +93,57 @@ ion-toolbar {
     letter-spacing: 1px;
   }
 }
+
+// scroll horizontal para amigos
+.friends-row {
+  display: flex;
+  overflow-x: auto;
+  gap: 20px;
+  padding-bottom: 10px;
+  &::-webkit-scrollbar { display: none; } // oculta la barra de scroll
+}
+
+.friend-item {
+  text-align: center;
+  min-width: 65px;
+}
+
+.friend-avatar {
+  border: 2px solid #4A90E2;
+  margin: 0 auto;
+  width: 60px;
+  height: 60px;
+}
+
+.friend-name {
+  color: white;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.add-friend-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #2A3141;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4A90E2;
+  font-size: 1.5rem;
+  margin: 0 auto;
+}
+
+.separator {
+  border-color: rgba(255, 255, 255, 0.1);
+  margin: 15px 16px;
+}
+
+// Esta clase pintará de amarillo el icono y el texto
+.item-activo {
+  color: #FFD700 !important; // 
+  
+  ion-icon, img {
+    filter: brightness(1.2) sepia(1) hue-rotate(10deg) saturate(5); // Truco para amarillar imágenes si son blancas/grises
+  }
+}

@@ -15,6 +15,7 @@ export class SugerenciasPage implements OnInit {
     avatar_url: 'assets/icon/perfil_default.png' 
   };
 
+  listaAmigos: any[] = [];
   listaSugeridos: any[] = []; 
 
   constructor() { }
@@ -24,6 +25,20 @@ export class SugerenciasPage implements OnInit {
   }
 
   cargarSugerenciasDesdeBBDD() {
+
+    // datos simulados
+    this.listaAmigos = [
+      { 
+        id: 10, 
+        nombre: 'Tita', 
+        avatar_url: 'https://ionicframework.com/docs/img/demos/avatar.svg' 
+      },
+      { 
+        id: 11, 
+        nombre: 'Carlota', 
+        avatar_url: 'https://ionicframework.com/docs/img/demos/avatar.svg' 
+      }
+    ];
     // datossimulados
     this.listaSugeridos = [
       {

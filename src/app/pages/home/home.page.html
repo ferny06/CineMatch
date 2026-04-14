@@ -40,32 +40,44 @@
     </div>
   </div>
 
-  <div class="container mb-5 d-flex gap-2 justify-content-center">
-    <button (click)="irAMisListas()" style="background-color:#e50914; color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:0.9rem; font-weight:600; cursor:pointer;">Mis Listas</button>
-    <button (click)="irASugerencias()" style="background-color:#e50914; color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:0.9rem; font-weight:600; cursor:pointer;">Sugerencias</button>
-    <button (click)="irAMensajes()" style="background-color:#e50914; color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:0.9rem; font-weight:600; cursor:pointer;">Mensajes</button>
-  </div>
+ 
 </ion-content>
 
-<ion-footer class="ion-no-border">
-  <ion-toolbar  class="py-1">
-    <div class="d-flex justify-content-around align-items-center w-100">
-      
-      <div class="footer-item active" (click)="irAHome()">
-        <ion-icon src="assets/icon/home_icon.svg"></ion-icon>
-        <span>Home</span>
-      </div>
-
-      <div class="footer-item" (click)="irARanking()">
-        <ion-icon src="assets/icon/ranking_icon.svg"></ion-icon>
-        <span>Ranking</span>
-      </div>
-
-      <div class="footer-item" (click)="irAPerfil()">
-        <ion-icon src="assets/icon/perfil_icon.svg"></ion-icon>
-        <span>Perfil</span>
-      </div>
-
+<!-- me quedó feo le falta cambiar cosas -->
+<ion-footer class="ion-no-border" style="background-color: #0B1222; border-top: 1px solid rgba(255,255,255,0.1);">
+  <div style="display: flex !important; flex-direction: row !important; justify-content: space-around; align-items: center; padding: 14px 0;">
+    
+        <div (click)="irAHome()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #FFD700;">
+      <ion-icon src="assets/icon/home_icon.svg" style="font-size: 30px; margin-bottom: 4px;"></ion-icon>
+      <span style="font-size: 0.75rem; font-weight: 700;">Home</span>
     </div>
-  </ion-toolbar>
+
+    <div (click)="irAMisListas()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
+      <img src="assets/icon/pelicula.png" style="width: 30px; height: 30px; margin-bottom: 4px;">
+      <span style="font-size: 0.75rem; font-weight: 600;">Listas</span>
+    </div>
+
+    <div (click)="irASugerencias()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
+      <img src="assets/icon/amigos.png" style="width: 30px; height: 30px; margin-bottom: 4px;">
+      <span style="font-size: 0.75rem; font-weight: 600;">Amigos</span>
+    </div>
+
+
+
+    <div (click)="irARanking()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
+      <ion-icon src="assets/icon/ranking_icon.svg" style="font-size: 30px; margin-bottom: 4px;"></ion-icon>
+      <span style="font-size: 0.75rem; font-weight: 600;">Ranking</span>
+    </div>
+
+    <div (click)="irAMensajes()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
+      <img src="assets/icon/mensaje.png" style="width: 30px; height: 30px; margin-bottom: 4px;">
+      <span style="font-size: 0.75rem; font-weight: 600;">Mensajes</span>
+    </div>
+
+    <div (click)="irAPerfil()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
+      <ion-icon src="assets/icon/perfil_icon.svg" style="font-size: 30px; margin-bottom: 4px;"></ion-icon>
+      <span style="font-size: 0.75rem; font-weight: 600;">Perfil</span>
+    </div>
+
+  </div>
 </ion-footer>

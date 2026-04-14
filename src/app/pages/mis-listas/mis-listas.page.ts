@@ -68,4 +68,5 @@ export class MisListasPage implements OnInit {
   agregarLista() {
     // inútil por ahora
   }
+  
 }
