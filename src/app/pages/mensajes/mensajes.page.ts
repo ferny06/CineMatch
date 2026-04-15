@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 })
 export class MensajesPage implements OnInit {
 
-  // Estos son los campos EXACTOS de tu imagen image_9008ca.png
+  
   mensajes: any[] = [
     {
       local_id: 'msg-001',          
