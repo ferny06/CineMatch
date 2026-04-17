@@ -60,3 +60,8 @@ ion-back-button {
 ion-title {
   padding-inline: 8px;
 }
+
+// espacio para que el contenido no quede detrás del footer-nav fijo
+ion-content {
+  --padding-bottom: 75px;
+}

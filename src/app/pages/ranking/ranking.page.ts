@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { DatabaseService } from '../../../database/services/database.service';
+import { PullSyncService } from '../../services/pull-sync.service';
 
 @Component({
   selector: 'app-ranking',
@@ -14,7 +15,10 @@ export class RankingPage implements OnInit {
   resenaSeleccionada: any = null;
   private usuarioId: string = '';
 
-  constructor(private databaseService: DatabaseService) {}
+  constructor(
+    private databaseService: DatabaseService,
+    private pullSync: PullSyncService,
+  ) {}
 
   ngOnInit() {}
 
@@ -26,6 +30,8 @@ export class RankingPage implements OnInit {
       if (userRes.values && userRes.values.length > 0) {
         this.usuarioId = userRes.values[0].id;
       }
+
+      await this.pullSync.pullResenas(this.usuarioId);
 
       const res = await db.query(`
         SELECT

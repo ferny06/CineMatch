@@ -1,10 +1,10 @@
 ion-footer {
-
-    // para ver si con esto aparece footer nav
-  display: block !important;    // Obliga a que el footer exista visualmente
-  position: fixed !important;   // Lo fija al fondo de la pantalla
-  bottom: 0;                    // Lo pega bien abajo
-  z-index: 999;                 // Lo pone al frente de todo (como la capa superior)
+  display: block !important;
+  position: fixed !important;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
   min-height: 65px;
 
   --background: #0B1222;

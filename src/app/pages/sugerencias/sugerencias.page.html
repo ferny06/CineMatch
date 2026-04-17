@@ -59,8 +59,7 @@
 
         <ion-card-content class="pt-0">
           <div class="tags-container">
-            <ion-badge color="dark">Acción</ion-badge>
-            <ion-badge color="dark">Drama</ion-badge>
+            <ion-badge color="dark" *ngFor="let g of sugerido.generos">{{ g }}</ion-badge>
           </div>
         </ion-card-content>
       </ion-card>

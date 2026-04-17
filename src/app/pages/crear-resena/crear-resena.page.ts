@@ -4,6 +4,7 @@ import { AlertController } from '@ionic/angular';
 import { DatabaseService } from '../../../database/services/database.service';
 import { ColaService } from '../../services/cola.service';
 import { GeneroPreferenciaService } from '../../services/genero-preferencia.service';
+import { PullSyncService } from '../../services/pull-sync.service';
 import { DB_TABLES, SYNC_STATUS, SYNC_OPERACION } from '../../../database/database.constants';
 
 @Component({
@@ -39,6 +40,7 @@ export class CrearResenaPage implements OnInit {
     private databaseService: DatabaseService,
     private colaService: ColaService,
     private generoPreferenciaService: GeneroPreferenciaService,
+    private pullSync: PullSyncService,
   ) { }
 
   async ngOnInit() {
@@ -54,6 +56,7 @@ export class CrearResenaPage implements OnInit {
       const userRes = await db.query('SELECT id FROM local_usuario LIMIT 1');
       if (userRes.values && userRes.values.length > 0) {
         this.usuarioId = userRes.values[0].id;
+        await this.pullSync.pullPreferencias(this.usuarioId);
       }
 
       // Obtener UUID local de la película por tmdb_id

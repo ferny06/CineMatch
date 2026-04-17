@@ -486,6 +486,49 @@ export class SupabaseService {
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // PULL — lectura desde Supabase hacia local
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  async pullResenas(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('resena')
+      .select(`
+        id, calificacion, comentario, tiene_spoiler, fecha_creacion,
+        pelicula!inner (
+          id, tmdb_id, titulo, sinopsis, poster_url,
+          fecha_estreno, duracion_min, promedio_votos, idioma_original
+        )
+      `)
+      .eq('usuario_id', usuarioId);
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
+  async pullListas(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('lista_peliculas')
+      .select(`
+        id, estado, fecha_visto, fecha_creacion,
+        pelicula!inner (
+          id, tmdb_id, titulo, sinopsis, poster_url,
+          fecha_estreno, duracion_min, promedio_votos, idioma_original
+        )
+      `)
+      .eq('usuario_id', usuarioId);
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
+  async pullPreferencias(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('usuario_genero_preferencia')
+      .select(`
+        id, peso_pref, fecha_creacion_pref,
+        genero!inner ( tmdb_id, nombre )
+      `)
+      .eq('usuario_id', usuarioId);
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // MENSAJES
   // ══════════════════════════════════════════════════════════════════════════════
 
@@ -650,6 +693,99 @@ export class SupabaseService {
       .single();
 
     return { data, error: error?.message ?? null };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // GEOLOCALIZACIÓN
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Actualiza las coordenadas GPS del usuario en Supabase.
+   *
+   * Se invoca cada vez que el usuario entra a la página de sugerencias para
+   * mantener la ubicación actualizada en tiempo real.
+   *
+   * @param id      UUID del usuario en Supabase
+   * @param latitud Latitud GPS actual
+   * @param longitud Longitud GPS actual
+   */
+  async actualizarUbicacionUsuario(
+    id: string,
+    latitud: number,
+    longitud: number
+  ): Promise<void> {
+    const { error } = await this.supabase
+      .from('usuario')
+      .update({ latitud, longitud })
+      .eq('id', id);
+
+    if (error) {
+      console.warn('[SupabaseService] Error al actualizar ubicación:', error.message);
+    }
+  }
+
+  /**
+   * Obtiene todos los usuarios con búsqueda abierta que tienen coordenadas GPS
+   * registradas, excluyendo al usuario actual.
+   *
+   * Incluye las preferencias de género de cada usuario mediante nested select
+   * para poder calcular la similitud de gustos en el cliente.
+   *
+   * @param excluirId UUID del usuario actual (para excluirlo de los resultados)
+   * @returns Lista de usuarios candidatos con sus preferencias de género
+   */
+  async obtenerUsuariosCercanos(excluirId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('usuario')
+      .select(`
+        id, nombre_user, nombre, avatar_url, latitud, longitud, radio_conex,
+        usuario_genero_preferencia (
+          peso_pref,
+          genero ( tmdb_id, nombre )
+        )
+      `)
+      .eq('busqueda_abierta', 'S')
+      .not('latitud', 'is', null)
+      .not('longitud', 'is', null)
+      .neq('id', excluirId);
+
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
+  /**
+   * Obtiene los amigos (conexiones aceptadas) del usuario actual.
+   *
+   * @param usuarioId UUID del usuario actual
+   * @returns Lista de perfiles de amigos con id, nombre y avatar
+   */
+  async obtenerAmigos(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('conexion')
+      .select(`
+        solicitante_id,
+        destinatario_id,
+        solicitante:usuario!conexion_solicitante_id_fkey ( id, nombre_user, nombre, avatar_url ),
+        destinatario:usuario!conexion_destinatario_id_fkey ( id, nombre_user, nombre, avatar_url )
+      `)
+      .eq('estado', 'aceptada')
+      .or(`solicitante_id.eq.${usuarioId},destinatario_id.eq.${usuarioId}`);
+
+    if (error) {
+      return { data: null, error: error.message };
+    }
+
+    // Extraer el perfil del otro participante en cada conexión
+    const amigos = (data ?? []).map((conexion: any) => {
+      const esSolicitante = conexion.solicitante_id === usuarioId;
+      const perfil = esSolicitante ? conexion.destinatario : conexion.solicitante;
+      return {
+        id:         perfil?.id,
+        nombre:     perfil?.nombre_user || perfil?.nombre || 'Usuario',
+        avatar_url: perfil?.avatar_url ?? null,
+      };
+    });
+
+    return { data: amigos, error: null };
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
