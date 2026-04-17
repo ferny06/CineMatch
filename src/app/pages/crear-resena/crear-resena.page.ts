@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { DatabaseService } from '../../../database/services/database.service';
 import { ColaService } from '../../services/cola.service';
+import { GeneroPreferenciaService } from '../../services/genero-preferencia.service';
 import { DB_TABLES, SYNC_STATUS, SYNC_OPERACION } from '../../../database/database.constants';
 
 @Component({
@@ -37,6 +38,7 @@ export class CrearResenaPage implements OnInit {
     private alertController: AlertController,
     private databaseService: DatabaseService,
     private colaService: ColaService,
+    private generoPreferenciaService: GeneroPreferenciaService,
   ) { }
 
   async ngOnInit() {
@@ -83,19 +85,35 @@ export class CrearResenaPage implements OnInit {
       return;
     }
 
-    // Validación: datos de contexto disponibles
-    if (!this.usuarioId || !this.peliculaLocalId) {
-      const alert = await this.alertController.create({
-        header: 'Error',
-        message: 'No se pudo identificar el usuario o la película. Vuelve al detalle de la película e inténtalo de nuevo.',
-        buttons: ['OK'],
-      });
-      await alert.present();
-      return;
-    }
-
     try {
       const db = this.databaseService.obtenerConexion();
+
+      // Re-leer los IDs justo antes del INSERT para evitar usar UUIDs stale.
+      // El sync de pelicula puede actualizar local_pelicula.id (reconciliación de
+      // UUID con Supabase) entre ngOnInit y guardar(); si usamos el UUID cacheado
+      // y ya no existe en local_pelicula, el INSERT falla con FK violation.
+      const userRes2 = await db.query('SELECT id FROM local_usuario LIMIT 1');
+      if (userRes2.values && userRes2.values.length > 0) {
+        this.usuarioId = userRes2.values[0].id;
+      }
+      const pelRes2 = await db.query(
+        'SELECT id FROM local_pelicula WHERE tmdb_id = ?',
+        [this.peliculaTmdbId]
+      );
+      if (pelRes2.values && pelRes2.values.length > 0) {
+        this.peliculaLocalId = pelRes2.values[0].id;
+      }
+
+      // Validación: datos de contexto disponibles (re-verificar tras re-lectura)
+      if (!this.usuarioId || !this.peliculaLocalId) {
+        const alert = await this.alertController.create({
+          header: 'Error',
+          message: 'No se pudo identificar el usuario o la película. Vuelve al detalle de la película e inténtalo de nuevo.',
+          buttons: ['OK'],
+        });
+        await alert.present();
+        return;
+      }
       const localId = crypto.randomUUID();
       const ahora = new Date().toISOString();
       const tieneSpoilerStr = this.resena.tiene_spoiler ? 'S' : 'N';
@@ -121,6 +139,13 @@ export class CrearResenaPage implements OnInit {
       // SyncService respeta este orden FK-safe al procesar la cola
       await this.colaService.encolar(DB_TABLES.PELICULA, this.peliculaLocalId, SYNC_OPERACION.INSERT);
       await this.colaService.encolar(DB_TABLES.RESENA, localId, SYNC_OPERACION.INSERT);
+
+      // Actualizar preferencias de género (fire-and-forget).
+      // Se ejecuta sin await para no bloquear la navegación: si falla, la reseña
+      // ya fue guardada correctamente y el error solo se registra en consola.
+      this.generoPreferenciaService
+        .actualizarPreferencias(this.usuarioId, this.peliculaLocalId, this.resena.calificacion)
+        .catch(err => console.warn('[CrearResenaPage] Error al actualizar preferencias de género:', err));
 
       console.log('[CrearResenaPage] Reseña guardada:', localId);
       this.router.navigate(['/pelicula', this.peliculaTmdbId]);

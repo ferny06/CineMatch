@@ -68,6 +68,7 @@ import { LocalPelicula } from '../../database/models/local-pelicula.model';
 import { LocalLista } from '../../database/models/local-lista.model';
 import { LocalResena } from '../../database/models/local-resena.model';
 import { LocalMensaje } from '../../database/models/local-mensaje.model';
+import { LocalUsuarioGeneroPreferencia } from '../../database/models/local-usuario-genero-preferencia.model';
 
 // ─── Constantes de control ────────────────────────────────────────────────────
 
@@ -79,16 +80,18 @@ const MAX_REINTENTOS = 3;
  * El índice más bajo se procesa primero, garantizando que las FK ya existan
  * en Supabase cuando se inserta un registro dependiente.
  *
- * Tier 1: usuario, pelicula (sin FK hacia otras tablas sincronizables)
- * Tier 2: lista, resena     (FK hacia usuario + pelicula)
- * Tier 3: mensaje           (FK hacia conversacion + usuario)
+ * Tier 1: usuario, pelicula   (sin FK hacia otras tablas sincronizables)
+ * Tier 2: lista, resena,      (FK hacia usuario + pelicula)
+ *         pref_genero         (FK hacia usuario; tmdb_genero_id no es FK real)
+ * Tier 3: mensaje             (FK hacia conversacion + usuario)
  */
 const ORDEN_SYNC: string[] = [
-  DB_TABLES.USUARIO,    // Tier 1 — sin dependencias
-  DB_TABLES.PELICULA,   // Tier 1 — sin dependencias
-  DB_TABLES.LISTA,      // Tier 2 — depende de usuario + pelicula
-  DB_TABLES.RESENA,     // Tier 2 — depende de usuario + pelicula
-  DB_TABLES.MENSAJE,    // Tier 3 — depende de conversacion + usuario
+  DB_TABLES.USUARIO,      // Tier 1 — sin dependencias
+  DB_TABLES.PELICULA,     // Tier 1 — sin dependencias
+  DB_TABLES.LISTA,        // Tier 2 — depende de usuario + pelicula
+  DB_TABLES.RESENA,       // Tier 2 — depende de usuario + pelicula
+  DB_TABLES.PREF_GENERO,  // Tier 2 — depende de usuario (FK); tmdb_genero_id es solo un entero
+  DB_TABLES.MENSAJE,      // Tier 3 — depende de conversacion + usuario
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -233,6 +236,9 @@ export class SyncService {
           break;
         case DB_TABLES.RESENA:
           await this.sincronizarResena(item);
+          break;
+        case DB_TABLES.PREF_GENERO:
+          await this.sincronizarPreferenciaGenero(item);
           break;
         case DB_TABLES.MENSAJE:
           await this.sincronizarMensaje(item);
@@ -504,6 +510,67 @@ export class SyncService {
   }
 
   /**
+   * Sincroniza un registro de `local_usuario_genero_preferencia` con la tabla
+   * `usuario_genero_preferencia` en Supabase.
+   *
+   * Tanto los INSERT como los UPDATE locales se traducen en un único upsert en
+   * Supabase, porque lo que importa en el servidor es el estado final del peso
+   * (peso_pref + conteo), no el historial de cambios.
+   *
+   * No existe operación DELETE para preferencias: el usuario no puede borrarlas
+   * explícitamente; se recalculan automáticamente con cada nueva reseña.
+   *
+   * La tabla usa `id` (no `local_id`) como PK, igual que `local_usuario`.
+   * Por eso se llama a actualizarSyncStatus con pkCampo = 'id'.
+   *
+   * @param item Ítem de la cola con `registro_id` = id de la preferencia
+   */
+  private async sincronizarPreferenciaGenero(item: ColaSync): Promise<void> {
+    const db = this.databaseService.obtenerConexion();
+
+    const resultado = await db.query(
+      `SELECT * FROM ${DB_TABLES.PREF_GENERO} WHERE id = ?`,
+      [item.registro_id]
+    );
+
+    const pref: LocalUsuarioGeneroPreferencia | undefined = resultado.values?.[0];
+
+    if (!pref) {
+      // El registro fue eliminado localmente antes de sincronizarse; ignorar.
+      console.warn(
+        `[SyncService] PreferenciaGenero ${item.registro_id} no encontrada en local. Ignorando.`
+      );
+      await this.marcarCompletado(item.id!);
+      return;
+    }
+
+    // INSERT y UPDATE usan el mismo upsert: el servidor guarda el estado final.
+    const { error } = await this.supabaseService.upsertPreferenciaGenero(pref);
+
+    if (error) {
+      if (error.startsWith('GENRE_NOT_FOUND:')) {
+        // El género aún no existe en Supabase: upsertPelicula no ha corrido (o falló) en este
+        // ciclo de sync. Resetear a 'pendiente' sin gastar un intento para que el próximo ciclo
+        // lo reintente una vez que Tier 1 haya creado el género.
+        console.warn(
+          `[SyncService] Género no encontrado en Supabase para pref ${item.registro_id} ` +
+          `(${error}). Se reintentará en el siguiente ciclo sin consumir un intento.`
+        );
+        await this.marcarPendiente(item.id!);
+        return;
+      }
+      throw new Error(`upsertPreferenciaGenero falló: ${error}`);
+    }
+
+    // Actualizar sync_status='synced' y synced_at en el registro local.
+    // pkCampo = 'id' porque local_usuario_genero_preferencia usa 'id' como PK.
+    await this.actualizarSyncStatus(DB_TABLES.PREF_GENERO, 'id', item.registro_id);
+    await this.marcarCompletado(item.id!);
+
+    console.log(`[SyncService] ✓ PreferenciaGenero ${item.registro_id} sincronizada.`);
+  }
+
+  /**
    * Sincroniza un registro de `local_mensaje` con `mensaje` en Supabase.
    *
    * Requisito previo crítico: el `conversacion_id` del mensaje debe existir
@@ -615,6 +682,27 @@ export class SyncService {
            last_attempt  = ?
        WHERE id = ?`,
       [intentosPrevios + 1, ahora, colaId]
+    );
+  }
+
+  /**
+   * Resetea un ítem de cola a 'pendiente' sin incrementar el contador de intentos.
+   *
+   * Se usa exclusivamente para errores de dependencia transitoria (ej: género aún
+   * no sincronizado), donde el fallo no es culpa del ítem sino de un Tier anterior
+   * que no completó su sync. Al no gastar un intento, el ítem sobrevive hasta que
+   * la dependencia esté disponible.
+   *
+   * @param colaId ID autoincremental del ítem en cola_sync
+   */
+  private async marcarPendiente(colaId: number): Promise<void> {
+    const db = this.databaseService.obtenerConexion();
+
+    await db.run(
+      `UPDATE ${DB_TABLES.COLA_SYNC}
+       SET status = '${SYNC_COLA_STATUS.PENDIENTE}'
+       WHERE id = ?`,
+      [colaId]
     );
   }
 

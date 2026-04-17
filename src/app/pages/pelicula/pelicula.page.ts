@@ -90,9 +90,15 @@ export class PeliculaPage implements OnInit {
     );
 
     if (existe.values && existe.values.length > 0) {
-      // Ya existe localmente: reutilizar UUID y encolar sync por si cambió
+      // Ya existe localmente: reutilizar UUID y actualizar generos_json con datos frescos de TMDB.
+      // Crítico: si generos_json era null (película cacheada antes de que se implementara el campo),
+      // GeneroPreferenciaService retornaría temprano sin crear preferencias de género.
       this.peli.id = existe.values[0].id;
-      console.log('[PeliculaPage] Película ya en local_pelicula, id:', this.peli.id);
+      await db.run(
+        `UPDATE local_pelicula SET generos_json = ?, synced_at = ? WHERE id = ?`,
+        [this.peli.generos_json ?? null, new Date().toISOString(), this.peli.id]
+      );
+      console.log('[PeliculaPage] Película ya en local_pelicula — generos_json actualizado, id:', this.peli.id);
     } else {
       // Nueva película: generar UUID e insertar
       const localId = crypto.randomUUID();

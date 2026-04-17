@@ -60,7 +60,56 @@ export class AppComponent implements OnInit {
     const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
     if (session) {
       console.log('[AppComponent] Sesión activa encontrada — redirigiendo a home.');
+      await this.restaurarUsuarioLocalSiVacio(session.user.id);
       this.router.navigate(['/home'], { replaceUrl: true });
+    }
+  }
+
+  /**
+   * Si local_usuario está vacío, obtiene el perfil del usuario desde Supabase
+   * y lo inserta localmente. Cubre el caso de arranque con sesión persistida
+   * pero BD reinicializada (reinstalación sin borrar datos Auth del WebView).
+   */
+  private async restaurarUsuarioLocalSiVacio(authUserId: string): Promise<void> {
+    try {
+      const db = this.databaseService.obtenerConexion();
+      const check = await db.query('SELECT id FROM local_usuario LIMIT 1');
+      if (check.values && check.values.length > 0) {
+        return; // Ya tiene datos — no hace nada
+      }
+
+      const { data: perfil, error } = await this.supabaseService.getUsuarioPorAuthId(authUserId);
+      if (error || !perfil) {
+        console.warn('[AppComponent] No se pudo obtener el perfil desde Supabase:', error);
+        return;
+      }
+
+      const ahora = new Date().toISOString();
+      await db.run(
+        `INSERT INTO local_usuario
+           (id, auth_user_id, nombre_user, nombre, apellido_1, apellido_2,
+            email, fecha_nacimiento, genero, radio_conex, busqueda_abierta,
+            sync_status, synced_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [
+          perfil.id,
+          perfil.auth_user_id     ?? null,
+          perfil.nombre_user      ?? null,
+          perfil.nombre           ?? null,
+          perfil.apellido_1       ?? null,
+          perfil.apellido_2       ?? null,
+          perfil.email            ?? null,
+          perfil.fecha_nacimiento ?? null,
+          perfil.genero           ?? null,
+          perfil.radio_conex      ?? null,
+          perfil.busqueda_abierta ?? null,
+          'synced',
+          ahora,
+        ]
+      );
+      console.log('[AppComponent] local_usuario restaurado desde Supabase. id:', perfil.id);
+    } catch (err) {
+      console.warn('[AppComponent] Error al restaurar local_usuario:', err);
     }
   }
 }

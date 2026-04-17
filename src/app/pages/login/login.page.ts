@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
+import { DatabaseService } from '../../../database/services/database.service';
+import { DB_TABLES } from '../../../database/database.constants';
 
 @Component({
   selector: 'app-login',
@@ -15,8 +17,11 @@ export class LoginPage {
     email: '',
     password: '' };
 
-  constructor(private router: Router,
-              private supabaseService: SupabaseService) { }
+  constructor(
+    private router: Router,
+    private supabaseService: SupabaseService,
+    private databaseService: DatabaseService,
+  ) { }
 
   // función para el botón ingresar
   async ingresar() {
@@ -48,7 +53,61 @@ export class LoginPage {
     }
 
     console.log('[LoginPage] Sesión iniciada. Usuario:', data.user?.email);
+
+    // Restaurar local_usuario si está vacío.
+    // Ocurre cuando la BD se reinicializa (reinstalación, cambio de versión, etc.)
+    // pero la sesión Auth de Supabase persiste en el WebView.
+    await this.restaurarUsuarioLocalSiVacio(data.user!.id);
+
     this.router.navigate(['/home']);
+  }
+
+  /**
+   * Si local_usuario está vacío, obtiene el perfil del usuario desde Supabase
+   * y lo inserta localmente. Garantiza que las páginas que dependen de local_usuario
+   * (crear-resena, perfil, etc.) siempre encuentren datos tras el login.
+   */
+  private async restaurarUsuarioLocalSiVacio(authUserId: string): Promise<void> {
+    try {
+      const db = this.databaseService.obtenerConexion();
+      const check = await db.query(`SELECT id FROM ${DB_TABLES.USUARIO} LIMIT 1`);
+      if (check.values && check.values.length > 0) {
+        return; // Ya tiene datos — no hace nada
+      }
+
+      const { data: perfil, error: fetchError } = await this.supabaseService.getUsuarioPorAuthId(authUserId);
+      if (fetchError || !perfil) {
+        console.warn('[LoginPage] No se pudo obtener el perfil desde Supabase:', fetchError);
+        return;
+      }
+
+      const ahora = new Date().toISOString();
+      await db.run(
+        `INSERT INTO ${DB_TABLES.USUARIO}
+           (id, auth_user_id, nombre_user, nombre, apellido_1, apellido_2,
+            email, fecha_nacimiento, genero, radio_conex, busqueda_abierta,
+            sync_status, synced_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [
+          perfil.id,
+          perfil.auth_user_id     ?? null,
+          perfil.nombre_user      ?? null,
+          perfil.nombre           ?? null,
+          perfil.apellido_1       ?? null,
+          perfil.apellido_2       ?? null,
+          perfil.email            ?? null,
+          perfil.fecha_nacimiento ?? null,
+          perfil.genero           ?? null,
+          perfil.radio_conex      ?? null,
+          perfil.busqueda_abierta ?? null,
+          'synced',
+          ahora,
+        ]
+      );
+      console.log('[LoginPage] local_usuario restaurado desde Supabase. id:', perfil.id);
+    } catch (err) {
+      console.warn('[LoginPage] Error al restaurar local_usuario:', err);
+    }
   }
 
   // funcion para navegar al page de registro

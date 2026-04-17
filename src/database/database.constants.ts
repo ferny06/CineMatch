@@ -17,6 +17,11 @@ export const DB_NAME = 'cinematch_local';
  *          Ambas son NOT NULL en Supabase y se recopilan durante el registro.
  * v2 → v3: Se agrega columna `auth_user_id` a `local_usuario`.
  *          Es el UUID de Supabase Auth, NOT NULL en la tabla central `usuario`.
+ *
+ * Nota: la tabla `local_usuario_genero_preferencia` se agregó sin bump de versión
+ * porque usa CREATE TABLE IF NOT EXISTS (idempotente) y el proyecto no registra
+ * addUpgradeStatement. Subir DB_VERSION sin upgrade statements provoca que
+ * @capacitor-community/sqlite llame a onUpgrade vacío, lo que puede destruir datos.
  */
 export const DB_VERSION = 3;
 
@@ -36,6 +41,8 @@ export const DB_TABLES = {
   MENSAJE:      'local_mensaje',
   /** Cola de operaciones pendientes de sincronizar con Supabase */
   COLA_SYNC:    'cola_sync',
+  /** Preferencias de género del usuario, calculadas por media ponderada en cada reseña */
+  PREF_GENERO:  'local_usuario_genero_preferencia',
 } as const;
 
 /**

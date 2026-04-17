@@ -193,6 +193,25 @@ export class DatabaseService {
         );`,
         values: [],
       },
+      {
+        // v4 — Preferencias de género del usuario.
+        // Acumula el peso de afinidad por género mediante media ponderada por posición
+        // (fórmula de Welford) cada vez que el usuario crea una reseña.
+        // UNIQUE(usuario_id, tmdb_genero_id) garantiza un único registro por par.
+        statement: `CREATE TABLE IF NOT EXISTS local_usuario_genero_preferencia (
+          id             TEXT    NOT NULL PRIMARY KEY,
+          usuario_id     TEXT    NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
+          tmdb_genero_id INTEGER NOT NULL,
+          nombre_genero  TEXT    NOT NULL,
+          peso_pref      REAL    NOT NULL DEFAULT 0.0,
+          conteo         INTEGER NOT NULL DEFAULT 0,
+          sync_status    TEXT    NOT NULL DEFAULT 'pending',
+          synced_at      TEXT,
+          created_at     TEXT    NOT NULL,
+          UNIQUE(usuario_id, tmdb_genero_id)
+        );`,
+        values: [],
+      },
       { statement: `CREATE INDEX IF NOT EXISTS idx_lista_usuario   ON local_lista(usuario_id);`,   values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_lista_pelicula  ON local_lista(pelicula_id);`,  values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_resena_usuario  ON local_resena(usuario_id);`,  values: [] },
@@ -200,6 +219,8 @@ export class DatabaseService {
       { statement: `CREATE INDEX IF NOT EXISTS idx_mensaje_conv    ON local_mensaje(conversacion_id);`, values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_cola_status     ON cola_sync(status);`,         values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_cola_tabla      ON cola_sync(tabla);`,          values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_pref_genero_usuario ON local_usuario_genero_preferencia(usuario_id);`,   values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_pref_genero_tmdb    ON local_usuario_genero_preferencia(tmdb_genero_id);`, values: [] },
     ], false);
 
     // Migración incremental: solo agrega la columna si aún no existe.

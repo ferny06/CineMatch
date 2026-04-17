@@ -30,6 +30,7 @@ import { LocalPelicula, GeneroJson } from '../../database/models/local-pelicula.
 import { LocalLista } from '../../database/models/local-lista.model';
 import { LocalResena } from '../../database/models/local-resena.model';
 import { LocalMensaje } from '../../database/models/local-mensaje.model';
+import { LocalUsuarioGeneroPreferencia } from '../../database/models/local-usuario-genero-preferencia.model';
 
 // ─── Tipos de retorno de los métodos de Supabase ─────────────────────────────
 
@@ -91,6 +92,27 @@ interface MensajeRow {
   contenido: string;
   leido: string;
   fecha_envio: string;
+}
+
+/**
+ * Fila de la tabla `usuario_genero_preferencia` en Supabase.
+ *
+ * Columnas reales:
+ *   id                  — UUID (generado localmente)
+ *   usuario_id          — FK → usuario.id
+ *   genero_id           — FK → genero.id (INTEGER PK de la tabla genero)
+ *   peso_pref           — NUMBER(3,2) ∈ [0.00, 1.00]
+ *   fecha_creacion_pref — TIMESTAMP de creación
+ *
+ * Campos locales que NO se envían al servidor: tmdb_genero_id, nombre_genero,
+ * conteo, sync_status, synced_at.
+ */
+interface UsuarioGeneroPreferenciaRow {
+  id: string;
+  usuario_id: string;
+  genero_id: number;           // PK de la tabla genero (no el tmdb_id)
+  peso_pref: number;
+  fecha_creacion_pref: string; // ISO 8601 → mapea desde local created_at
 }
 
 /** Fila mínima de `conversacion` que se almacena en el caché local */
@@ -200,6 +222,25 @@ export class SupabaseService {
     return { data, error: error?.message ?? null };
   }
 
+  /**
+   * Obtiene el perfil del usuario desde Supabase a partir del UUID de Supabase Auth.
+   *
+   * Se usa para restaurar `local_usuario` después de un login cuando la tabla
+   * local está vacía (ej: después de reinstalar la app o de que la BD se reinicialice).
+   *
+   * @param authUserId UUID de Supabase Auth (session.user.id)
+   * @returns Fila completa de `usuario` o null si no existe
+   */
+  async getUsuarioPorAuthId(authUserId: string): Promise<SupabaseResult<UsuarioRow>> {
+    const { data, error } = await this.supabase
+      .from('usuario')
+      .select('id, auth_user_id, nombre_user, nombre, apellido_1, apellido_2, email, fecha_nacimiento, genero, radio_conex, busqueda_abierta, avatar_url, bio')
+      .eq('auth_user_id', authUserId)
+      .maybeSingle();
+
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
   // ══════════════════════════════════════════════════════════════════════════════
   // PELÍCULA
   // ══════════════════════════════════════════════════════════════════════════════
@@ -223,7 +264,6 @@ export class SupabaseService {
   async upsertPelicula(pelicula: LocalPelicula): Promise<SupabaseResult<string>> {
     // ── Paso 1: Upsert de la película ─────────────────────────────────────────
     const peliculaPayload = {
-      id:              pelicula.id,              // UUID local = UUID Supabase (primera inserción)
       tmdb_id:         pelicula.tmdb_id!,
       titulo:          pelicula.titulo,
       sinopsis:        pelicula.sinopsis        ?? null,
@@ -543,6 +583,73 @@ export class SupabaseService {
     }));
 
     return { data: conversaciones, error: null };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // PREFERENCIAS DE GÉNERO
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Inserta o actualiza una preferencia de género en la tabla
+   * `usuario_genero_preferencia` de Supabase.
+   *
+   * La tabla del servidor usa `genero_id` (FK → genero.id, INTEGER),
+   * no el `tmdb_genero_id` almacenado localmente. Por eso se busca
+   * primero el `genero.id` correspondiente al `tmdb_genero_id` local.
+   * Este lookup es seguro porque `upsertPelicula` (Tier 1 del sync)
+   * ya habrá creado el registro de género antes de que se procese esta
+   * preferencia (Tier 2).
+   *
+   * Campos locales excluidos del payload: tmdb_genero_id, nombre_genero,
+   * conteo, sync_status, synced_at — son exclusivos del esquema SQLite.
+   *
+   * El upsert usa onConflict='usuario_id,genero_id' para manejar el caso
+   * en que el servidor ya tenga un registro para ese par, independientemente
+   * del UUID local.
+   *
+   * @param pref Registro local de preferencia a sincronizar
+   * @returns SupabaseResult estándar
+   */
+  async upsertPreferenciaGenero(
+    pref: LocalUsuarioGeneroPreferencia
+  ): Promise<SupabaseResult> {
+
+    // ── Paso 1: Resolver genero.id a partir del tmdb_genero_id local ─────────
+    // La tabla central usa genero_id (PK entera de la tabla genero),
+    // no el tmdb_id de TMDB directamente.
+    const { data: genData, error: genError } = await this.supabase
+      .from('genero')
+      .select('id')
+      .eq('tmdb_id', pref.tmdb_genero_id)
+      .maybeSingle();
+
+    if (genError || !genData) {
+      // Prefijo especial para que SyncService distinga este error transitorio (dependencia de
+      // upsertPelicula aún no ejecutada) de un error permanente. Al detectarlo, el ítem se
+      // resetea a 'pendiente' sin consumir un intento, evitando que MAX_REINTENTOS se agote
+      // antes de que upsertPelicula cree el género en Supabase.
+      return {
+        data: null,
+        error: `GENRE_NOT_FOUND:tmdb_id=${pref.tmdb_genero_id}`,
+      };
+    }
+
+    // ── Paso 2: Upsert con los campos del esquema central ─────────────────────
+    const payload: UsuarioGeneroPreferenciaRow = {
+      id:                  pref.id,
+      usuario_id:          pref.usuario_id,
+      genero_id:           genData.id,        // PK de la tabla genero (INTEGER)
+      peso_pref:           pref.peso_pref,
+      fecha_creacion_pref: pref.created_at,   // ISO 8601 → TIMESTAMP en Supabase
+    };
+
+    const { data, error } = await this.supabase
+      .from('usuario_genero_preferencia')
+      .upsert(payload, { onConflict: 'usuario_id,genero_id' })
+      .select()
+      .single();
+
+    return { data, error: error?.message ?? null };
   }
 
   // ══════════════════════════════════════════════════════════════════════════════

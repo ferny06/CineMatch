@@ -15,3 +15,4 @@ export * from './local-lista.model';
 export * from './local-resena.model';
 export * from './local-mensaje.model';
 export * from './cola-sync.model';
+export * from './local-usuario-genero-preferencia.model';

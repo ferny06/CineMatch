@@ -1,6 +1,6 @@
 -- ============================================================
 -- CineMatch — Esquema de Base de Datos Local (SQLite)
--- Versión: 1
+-- Versión: 4
 --
 -- Propósito:
 --   Este archivo es la documentación de referencia del esquema SQLite local.
@@ -16,11 +16,12 @@
 -- Relación con la BD central (Supabase):
 --   local_usuario    ←→ usuario
 --   local_pelicula   ←→ pelicula
---   local_conversacion ←→ conversacion
---   local_lista      ←→ lista_peliculas
---   local_resena     ←→ resena
---   local_mensaje    ←→ mensaje
---   cola_sync        → (tabla de control, no tiene espejo en el servidor)
+--   local_conversacion              ←→ conversacion
+--   local_lista                     ←→ lista_peliculas
+--   local_resena                    ←→ resena
+--   local_mensaje                   ←→ mensaje
+--   local_usuario_genero_preferencia ←→ usuario_genero_preferencia  [v4]
+--   cola_sync                       → (tabla de control, sin espejo en el servidor)
 --
 -- Correcciones aplicadas al modelo original:
 --   1. Se agrega local_conversacion para dar integridad referencial a local_mensaje
@@ -164,6 +165,38 @@ CREATE TABLE IF NOT EXISTS cola_sync (
 );
 
 -- ─────────────────────────────────────────────────────────────────
+-- Tabla: local_usuario_genero_preferencia  [v4 — nuevo]
+-- Peso de preferencia del usuario por cada género de película.
+--
+-- Algoritmo:
+--   Cada vez que el usuario crea una reseña con calificación r (1–5),
+--   se calcula un score normalizado (r-1)/4 ∈ [0.0, 1.0] y se pondera
+--   por la posición del género en la lista TMDB:
+--     posición 0 (principal): ×1.0
+--     posición 1:             ×0.5
+--     posición 2:             ×0.25
+--     posición ≥3:            ×0.1
+--   El peso acumulado se actualiza con la fórmula de Welford:
+--     nuevo_peso = viejo_peso + (contribucion - viejo_peso) / nuevo_conteo
+--
+-- La restricción UNIQUE(usuario_id, tmdb_genero_id) garantiza un único
+-- registro de peso por par (usuario, género).
+-- ─────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS local_usuario_genero_preferencia (
+  id             TEXT    NOT NULL PRIMARY KEY,       -- UUID generado localmente
+  usuario_id     TEXT    NOT NULL                    -- FK → local_usuario
+    REFERENCES local_usuario(id) ON DELETE CASCADE,
+  tmdb_genero_id INTEGER NOT NULL,                  -- ID del género en TMDB
+  nombre_genero  TEXT    NOT NULL,                  -- Nombre desnormalizado (ej: "Acción")
+  peso_pref      REAL    NOT NULL DEFAULT 0.0,      -- Peso acumulado [0.0, 1.0]
+  conteo         INTEGER NOT NULL DEFAULT 0,        -- Número de reseñas que contribuyeron
+  sync_status    TEXT    NOT NULL DEFAULT 'pending',-- Estado: pending/synced/error
+  synced_at      TEXT,                              -- Última sync ISO 8601 (null si nunca)
+  created_at     TEXT    NOT NULL,                  -- Creación local ISO 8601 → fecha_creacion_pref en Supabase
+  UNIQUE(usuario_id, tmdb_genero_id)
+);
+
+-- ─────────────────────────────────────────────────────────────────
 -- Índices — optimizan las consultas más frecuentes de la app
 -- ─────────────────────────────────────────────────────────────────
 
@@ -181,3 +214,7 @@ CREATE INDEX IF NOT EXISTS idx_mensaje_conv    ON local_mensaje(conversacion_id)
 CREATE INDEX IF NOT EXISTS idx_cola_status     ON cola_sync(status);
 -- Ítems de la cola filtrados por tabla (para procesar por entidad)
 CREATE INDEX IF NOT EXISTS idx_cola_tabla      ON cola_sync(tabla);
+-- Preferencias de género de un usuario (para cargar su perfil de gustos)
+CREATE INDEX IF NOT EXISTS idx_pref_genero_usuario ON local_usuario_genero_preferencia(usuario_id);
+-- Usuarios con preferencia por un género específico (para recomendaciones)
+CREATE INDEX IF NOT EXISTS idx_pref_genero_tmdb    ON local_usuario_genero_preferencia(tmdb_genero_id);
