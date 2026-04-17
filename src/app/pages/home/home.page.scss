@@ -1,31 +1,23 @@
 ion-content {
+  // color de fondo principal de la app
   --background: #0B1222; 
 
-  .header-container {
-    margin-top: 40px; 
-    padding: 0 20px; 
-    display: flex;
-    flex-direction: column;
-    gap: 15px; 
-  }
-
-  .user-greeting {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    h2 {
-      margin: 0;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: white;
-    }
-  }
-
+  // --- SECCIÓN: SALUDO Y LOGO ---
   .container {
     padding-left: 15px;
     padding-right: 15px;
   }
 
+  // Esta es la clase que debes ponerle al <span> en el HTML
+  .saludo-texto {
+    color: #ffffff !important;
+    font-weight: 700 !important; 
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  // --- SECCIÓN: BUSCADOR ---
   .custom-search {
     --border-radius: 50px;
     --background: #ffffff;
@@ -33,11 +25,13 @@ ion-content {
     --icon-color: #666;
     padding: 0;
     height: 45px;
-    --color: #000000 !important; 
+    --color: #000000 !important; // texto que escribe el usuario en negro
+    margin-top: 15px;
   }
 
+  // --- SECCIÓN: TÍTULOS DE CATEGORÍAS ---
   .section-title {
-    color: white;
+    color: #ffffff !important; // forzar blanco para Android
     font-size: 0.9rem;
     font-weight: 400;
     margin-bottom: 18px;
@@ -45,12 +39,17 @@ ion-content {
     padding-bottom: 8px;
   }
 
+  // --- SECCIÓN: SCROLL HORIZONTAL DE PELÍCULAS ---
   .scroll-horizontal {
     display: flex;
     overflow-x: auto;
     gap: 12px;
     padding-bottom: 15px;
-    &::-webkit-scrollbar { display: none; }
+    
+    
+    &::-webkit-scrollbar { 
+      display: none; 
+    }
   }
 
   .movie-card {
@@ -58,7 +57,10 @@ ion-content {
     width: 130px;
     transition: transform 0.2s ease;
     cursor: pointer;
-    &:active { transform: scale(0.95); }
+
+    &:active { 
+      transform: scale(0.95); // efecto de clic
+    }
   }
 
   .figma-poster {
@@ -70,3 +72,20 @@ ion-content {
   }
 }
 
+// --- SECCIÓN: FOOTER (FUERA DEL ION-CONTENT) ---
+ion-footer {
+  background-color: #0B1222;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  span {
+    margin-top: 4px;
+  }
+
+  ion-icon, img {
+    transition: opacity 0.2s;
+  }
+
+  div[click]:active {
+    opacity: 0.6; 
+  }
+}

@@ -1,68 +1,74 @@
 ion-content {
- 
   --background: #0B1222;
 
   .container {
     padding-bottom: 20px;
   }
 
+  
   .header-section {
     margin-bottom: 10px;
     
     h2 {
       font-size: 1.6rem;
       letter-spacing: 0.5px;
+      color: #ffffff !important; // blanco en "gente cerca de ti"
+    }
+
+    h5 {
+      color: #FFD700 !important; // forzar amarillo en "amigos"
+      font-weight: bold;
     }
     
-    p {
+    p, .text-muted {
       font-size: 0.95rem;
-      opacity: 0.8;
+      color: #8e94a0 !important; // Un gris claro que se vea bien
+      opacity: 1; // Quitamos el opacity para que no se oscurezca más
     }
   }
 
-  // estilo tarjeta usuarios
+  // sugerencias
   .user-card {
-    background: #1A2131; // color secundario de tarjeta
+    background: #1A2131; 
     border-radius: 16px;
     margin: 0 10px 15px 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     border: 1px solid #2A3141;
 
     ion-item {
+      --background: transparent; // Asegura que no se vea blanco el fondo del item
       --padding-start: 10px;
       --inner-padding-end: 10px;
       margin: 5px 0;
+
+      h2 {
+        color: #ffffff !important; // nombre sugerido blanco
+        font-size: 1.1rem;
+        font-weight: bold;
+      }
     }
 
-    // Avatar 
     ion-avatar {
       width: 55px;
       height: 55px;
       border: 2px solid #303747;
     }
 
-    ion-label {
-      h2 {
-        font-size: 1.1rem;
-        margin-bottom: 4px;
-      }
-      
-      .distancia-text {
-        color: #4A90E2;
-        font-size: 0.85rem;
-        font-weight: 500;
-      }
+    .distancia-text {
+      color: #4A90E2 !important; 
+      font-size: 0.85rem;
+      font-weight: 500;
     }
 
-    // btn de agregar
     .btn-add {
+      color: #4A90E2 !important;
       ion-icon {
         font-size: 1.6rem;
       }
     }
   }
 
-  // contenedor de etiquetas d generos en cmun
+  // etiquetas de generos
   .tags-container {
     display: flex;
     flex-wrap: wrap;
@@ -71,7 +77,7 @@ ion-content {
 
     ion-badge {
       --background: #232A3B;
-      --color: #4A90E2; // Un azul suave para los géneros
+      --color: #4A90E2 !important; 
       padding: 6px 12px;
       border-radius: 8px;
       font-weight: 500;
@@ -80,32 +86,42 @@ ion-content {
   }
 }
 
-// estilo toolbar superior
+// tool bar superior
 ion-toolbar {
   --background: #0B1222;
-  --color: white;
-  --border-style: none;
-
+  --color: #ffffff !important;
+  
   ion-title {
+    color: #ffffff !important;
     font-weight: bold;
     font-size: 1.1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
   }
+
+  ion-back-button {
+    --color: #ffffff !important;
+  }
 }
 
-// scroll horizontal para amigos
+// amigos (scroll horizontal)
 .friends-row {
   display: flex;
   overflow-x: auto;
   gap: 20px;
   padding-bottom: 10px;
-  &::-webkit-scrollbar { display: none; } // oculta la barra de scroll
+  &::-webkit-scrollbar { display: none; }
 }
 
 .friend-item {
   text-align: center;
   min-width: 65px;
+
+  .friend-name {
+    color: #ffffff !important; // forzar blanco
+    font-size: 0.8rem;
+    margin-top: 5px;
+  }
 }
 
 .friend-avatar {
@@ -113,12 +129,6 @@ ion-toolbar {
   margin: 0 auto;
   width: 60px;
   height: 60px;
-}
-
-.friend-name {
-  color: white;
-  font-size: 0.8rem;
-  margin-top: 5px;
 }
 
 .add-friend-circle {
@@ -129,7 +139,7 @@ ion-toolbar {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4A90E2;
+  color: #4A90E2 !important;
   font-size: 1.5rem;
   margin: 0 auto;
 }
@@ -137,13 +147,4 @@ ion-toolbar {
 .separator {
   border-color: rgba(255, 255, 255, 0.1);
   margin: 15px 16px;
-}
-
-// Esta clase pintará de amarillo el icono y el texto
-.item-activo {
-  color: #FFD700 !important; // 
-  
-  ion-icon, img {
-    filter: brightness(1.2) sepia(1) hue-rotate(10deg) saturate(5); // Truco para amarillar imágenes si son blancas/grises
-  }
 }

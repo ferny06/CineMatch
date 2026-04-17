@@ -1,13 +1,49 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>perfil-amigo</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar style="--background: #0B1222;">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/amigos" text="" color="light"></ion-back-button>
+    </ion-buttons>
+    <ion-title style="color: white;">Perfil de @{{ amigo.nombre_user }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">perfil-amigo</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content style="--background: #0B1222;">
+  <div class="profile-header ion-padding">
+    <ion-avatar class="main-avatar">
+      <img [src]="amigo.avatar_url" />
+    </ion-avatar>
+    <h2 class="text-white">{{ amigo.nombre }} {{ amigo.apellido_1 }}</h2>
+    <p class="text-muted">{{ amigo.bio }}</p>
+    
+    <div class="tags-container">
+      <ion-badge color="warning" *ngFor="let p of amigo.preferencias">
+        {{ p.nombre_genero }}
+      </ion-badge>
+    </div>
+  </div>
+
+  <div class="ion-padding">
+    <h3 class="text-white section-title">Reseñas Realizadas</h3>
+    
+    <ion-card *ngFor="let r of resenas" class="movie-card">
+      <ion-card-header>
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <ion-card-title class="text-white">{{ r.titulo }}</ion-card-title>
+          <ion-icon 
+            [name]="r.sync_status === 'SINCRO' ? 'cloud-done' : 'cloud-upload'"
+            [color]="r.sync_status === 'SINCRO' ? 'success' : 'warning'">
+          </ion-icon>
+        </div>
+        <div class="stars">
+          <ion-icon name="star" [color]="i < r.calificacion ? 'warning' : 'medium'" 
+                    *ngFor="let s of [1,2,3,4,5]; let i = index"></ion-icon>
+        </div>
+      </ion-card-header>
+
+      <ion-card-content class="text-light">
+        "{{ r.comentario }}"
+        <p class="date-text">{{ r.created_at }}</p>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
