@@ -1,0 +1,50 @@
+ion-footer {
+
+    // para ver si con esto aparece footer nav
+  display: block !important;    // Obliga a que el footer exista visualmente
+  position: fixed !important;   // Lo fija al fondo de la pantalla
+  bottom: 0;                    // Lo pega bien abajo
+  z-index: 999;                 // Lo pone al frente de todo (como la capa superior)
+  min-height: 65px;
+
+  --background: #0B1222;
+  background-color: #0B1222;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  .nav-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    color: #8E94A0; // 
+
+    img {
+      width: 38px !important;   // Ancho físico en pantalla (más grande)
+      height: 38px !important;  // Alto físico en pantalla
+      margin-bottom: 3px;
+      object-fit: contain;      // Asegura que el icono no se deforme
+    }
+
+
+
+    span {
+font-size: 0.75rem;     
+      font-weight: 600;       
+      margin-top: 4px;        
+      letter-spacing: 0.3px;  
+      text-transform: none;   
+    }
+
+    &.active {
+      color: #FFD700 !important; 
+      font-weight: 700;
+    }
+  }
+}

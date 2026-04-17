@@ -8,6 +8,8 @@ import { MisListasPageRoutingModule } from './mis-listas-routing.module';
 
 import { MisListasPage } from './mis-listas.page';
 
+import { FooterNavComponent } from '../../components/footer-nav/footer-nav.component';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -15,6 +17,6 @@ import { MisListasPage } from './mis-listas.page';
     IonicModule,
     MisListasPageRoutingModule
   ],
-  declarations: [MisListasPage]
+  declarations: [MisListasPage, FooterNavComponent]
 })
 export class MisListasPageModule {}
