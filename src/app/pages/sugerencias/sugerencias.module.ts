@@ -7,13 +7,16 @@ import { IonicModule } from '@ionic/angular';
 import { SugerenciasPageRoutingModule } from './sugerencias-routing.module';
 
 import { SugerenciasPage } from './sugerencias.page';
+import { SharedModule } from 'src/app/modules/shared/shared-module';
+
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    SugerenciasPageRoutingModule
+    SugerenciasPageRoutingModule,
+    SharedModule
   ],
   declarations: [SugerenciasPage]
 })

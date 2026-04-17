@@ -43,41 +43,4 @@
  
 </ion-content>
 
-<!-- me quedó feo le falta cambiar cosas -->
-<ion-footer class="ion-no-border" style="background-color: #0B1222; border-top: 1px solid rgba(255,255,255,0.1);">
-  <div style="display: flex !important; flex-direction: row !important; justify-content: space-around; align-items: center; padding: 14px 0;">
-    
-        <div (click)="irAHome()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #FFD700;">
-      <ion-icon src="assets/icon/home_icon.svg" style="font-size: 30px; margin-bottom: 4px;"></ion-icon>
-      <span style="font-size: 0.75rem; font-weight: 700;">Home</span>
-    </div>
-
-    <div (click)="irAMisListas()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
-      <img src="assets/icon/pelicula.png" style="width: 30px; height: 30px; margin-bottom: 4px;">
-      <span style="font-size: 0.75rem; font-weight: 600;">Listas</span>
-    </div>
-
-    <div (click)="irASugerencias()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
-      <img src="assets/icon/amigos.png" style="width: 30px; height: 30px; margin-bottom: 4px;">
-      <span style="font-size: 0.75rem; font-weight: 600;">Amigos</span>
-    </div>
-
-
-
-    <div (click)="irARanking()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
-      <ion-icon src="assets/icon/ranking_icon.svg" style="font-size: 30px; margin-bottom: 4px;"></ion-icon>
-      <span style="font-size: 0.75rem; font-weight: 600;">Mis reseñas</span>
-    </div>
-
-    <div (click)="irAMensajes()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
-      <img src="assets/icon/mensaje.png" style="width: 30px; height: 30px; margin-bottom: 4px;">
-      <span style="font-size: 0.75rem; font-weight: 600;">Mensajes</span>
-    </div>
-
-    <div (click)="irAPerfil()" style="display: flex; flex-direction: column; align-items: center; flex: 1; color: #8E94A0;">
-      <ion-icon src="assets/icon/perfil_icon.svg" style="font-size: 30px; margin-bottom: 4px;"></ion-icon>
-      <span style="font-size: 0.75rem; font-weight: 600;">Perfil</span>
-    </div>
-
-  </div>
-</ion-footer>
+<app-footer-nav activo="home"></app-footer-nav>
