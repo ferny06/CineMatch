@@ -5,8 +5,11 @@ import { IonicModule } from '@ionic/angular';
 import { RankingPageRoutingModule } from './ranking-routing.module';
 import { RankingPage } from './ranking.page';
 
+import { SharedModule } from 'src/app/modules/shared/shared-module';
+
+
 @NgModule({
-  imports: [CommonModule, FormsModule, IonicModule, RankingPageRoutingModule],
+  imports: [CommonModule, FormsModule, IonicModule, RankingPageRoutingModule, SharedModule],
   declarations: [RankingPage]
 })
 export class RankingPageModule {}

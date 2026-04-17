@@ -1,0 +1,35 @@
+<ion-footer class="ion-no-border">
+  <div class="nav-container">
+    
+    <div (click)="navegar('home')" class="nav-item" [class.active]="activo === 'home'">
+      <img src="assets/icon/home.png">
+      <span>Home</span>
+    </div>
+
+    <div (click)="navegar('mis-listas')" class="nav-item" [class.active]="activo === 'listas'">
+      <img src="assets/icon/listas.png">
+      <span>Listas</span>
+    </div>
+
+    <div (click)="navegar('sugerencias')" class="nav-item" [class.active]="activo === 'amigos'">
+      <img src="assets/icon/amigos.png">
+      <span>Amigos</span>
+    </div>
+
+    <div (click)="navegar('ranking')" class="nav-item" [class.active]="activo === 'ranking'">
+      <img src="assets/icon/reseña.png">
+      <span>Reseñas</span>
+    </div>
+
+    <div (click)="navegar('mensajes')" class="nav-item" [class.active]="activo === 'mensajes'">
+      <img src="assets/icon/mensajes.png">
+      <span>Mensajes</span>
+    </div>
+
+    <div (click)="navegar('perfil')" class="nav-item" [class.active]="activo === 'perfil'">
+      <img src="assets/icon/perfil.png">
+      <span>Perfil</span>
+    </div>
+
+  </div>
+</ion-footer>

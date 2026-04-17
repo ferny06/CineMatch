@@ -8,12 +8,16 @@ import { MensajesPageRoutingModule } from './mensajes-routing.module';
 
 import { MensajesPage } from './mensajes.page';
 
+import { SharedModule } from 'src/app/modules/shared/shared-module';
+
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    MensajesPageRoutingModule
+    MensajesPageRoutingModule,
+    SharedModule
   ],
   declarations: [MensajesPage]
 })

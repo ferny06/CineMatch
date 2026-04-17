@@ -8,12 +8,17 @@ import { MisListasPageRoutingModule } from './mis-listas-routing.module';
 
 import { MisListasPage } from './mis-listas.page';
 
+import { SharedModule } from 'src/app/modules/shared/shared-module';
+
+
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    MisListasPageRoutingModule
+    MisListasPageRoutingModule,
+    SharedModule
   ],
   declarations: [MisListasPage]
 })
