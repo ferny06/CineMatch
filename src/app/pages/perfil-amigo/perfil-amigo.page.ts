@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DatabaseService } from 'src/database/services/database.service';
+import { SupabaseService } from 'src/app/services/supabase.service';
 
 @Component({
   selector: 'app-perfil-amigo',
@@ -8,32 +11,68 @@ import { Component, OnInit } from '@angular/core';
 })
 export class PerfilAmigoPage implements OnInit {
 
-  
+  amigoId = '';
+
   amigo: any = {
-    id: '', 
+    id: '',
     nombre: 'Cargando...',
     apellido_1: '',
     nombre_user: '',
     bio: '',
-    avatar_url: 'assets/icon/favicon.png',
-    preferencias: [] 
+    avatar_url: 'assets/icon/perfil_default.png',
+    preferencias: []
   };
 
-  
-  resenas: any[] = [
-    {
-      local_id: 'res-001',
-      titulo: 'Return to Silent Hill', 
-      calificacion: 1,     
-      comentario: 'bienmaala', 
-      sync_status: 'SINCRO',
-      created_at: '2026-02-02'
-    }
-  ];
+  resenas: any[] = [];
+  cargando = false;
 
-  constructor() { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private databaseService: DatabaseService,
+    private supabaseService: SupabaseService,
+  ) {}
 
   ngOnInit() {
-    // aqui  cargariamos la info usando local_id del amigo
+    this.amigoId = this.route.snapshot.paramMap.get('id') ?? '';
+  }
+
+  async ionViewWillEnter(): Promise<void> {
+    if (!this.amigoId) return;
+    this.cargando = true;
+    try {
+      await Promise.all([
+        this.cargarPerfil(),
+        this.cargarResenas(),
+      ]);
+    } finally {
+      this.cargando = false;
+    }
+  }
+
+  private async cargarPerfil(): Promise<void> {
+    const { data, error } = await this.supabaseService.getUsuarioPorId(this.amigoId);
+    if (error || !data) return;
+
+    const { data: prefs } = await this.supabaseService.obtenerPreferenciasDeUsuario(this.amigoId);
+
+    this.amigo = {
+      id:          data.id,
+      nombre:      data.nombre ?? '',
+      apellido_1:  data.apellido_1 ?? '',
+      nombre_user: data.nombre_user ?? '',
+      bio:         data.bio ?? '',
+      avatar_url:  data.avatar_url ?? 'assets/icon/perfil_default.png',
+      preferencias: prefs ?? [],
+    };
+  }
+
+  private async cargarResenas(): Promise<void> {
+    const { data } = await this.supabaseService.obtenerResenasDeUsuario(this.amigoId);
+    this.resenas = data ?? [];
+  }
+
+  irAMensajes(): void {
+    this.router.navigate(['/mensaje-amigo'], { queryParams: { amigoId: this.amigoId } });
   }
 }

@@ -1,0 +1,56 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar style="--background: #0B1222;">
+    <ion-buttons slot="start">
+      <ion-back-button text="" color="light"></ion-back-button>
+    </ion-buttons>
+    <ion-avatar slot="start" class="header-avatar">
+      <img [src]="amigo.avatar_url" />
+    </ion-avatar>
+    <ion-title style="color: white;">{{ amigo.nombre }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content style="--background: #0B1222;">
+  <div class="chat-wrapper">
+    <div
+      *ngFor="let msg of mensajes"
+      class="bubble-row"
+      [class.mio]="esMio(msg)"
+      [class.suyo]="!esMio(msg)"
+    >
+      <div class="bubble" [class.bubble-mia]="esMio(msg)" [class.bubble-suya]="!esMio(msg)">
+        <p class="msg-text">{{ msg.contenido }}</p>
+        <span class="msg-hora">{{ formatearHora(msg.fecha_envio) }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="mensajes.length === 0" class="empty-state">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      <p>¡Empieza la conversación!</p>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer style="--background: #0B1222;">
+  <ion-toolbar style="--background: #111d2e; --border-color: #1e2d3d;">
+    <div class="input-row">
+      <ion-textarea
+        [(ngModel)]="nuevoMensaje"
+        placeholder="Escribe un mensaje..."
+        rows="1"
+        autoGrow="true"
+        class="msg-input"
+        (keydown.enter)="onEnter($event)"
+      ></ion-textarea>
+      <ion-button
+        (click)="enviarMensaje()"
+        [disabled]="!nuevoMensaje.trim() || enviando"
+        color="warning"
+        shape="round"
+        class="send-btn"
+      >
+        <ion-icon name="send" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+</ion-footer>

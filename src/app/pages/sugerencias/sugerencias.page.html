@@ -23,9 +23,9 @@
     </div>
     
     <div class="friends-row px-3">
-      <div class="friend-item" *ngFor="let amigo of listaAmigos">
+      <div class="friend-item" *ngFor="let amigo of listaAmigos" (click)="verPerfilAmigo(amigo)" style="cursor:pointer">
         <ion-avatar class="friend-avatar">
-          <img [src]="amigo.avatar_url">
+          <img [src]="amigo.avatar_url || 'assets/icon/perfil_default.png'">
         </ion-avatar>
         <p class="friend-name">{{ amigo.nombre }}</p>
       </div>

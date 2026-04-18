@@ -47,8 +47,12 @@ const routes: Routes = [
     path: 'ranking',
     loadChildren: () => import('./pages/ranking/ranking.module').then( m => m.RankingPageModule)
   },  {
-    path: 'perfil-amigo',
+    path: 'perfil-amigo/:id',
     loadChildren: () => import('./pages/perfil-amigo/perfil-amigo.module').then( m => m.PerfilAmigoPageModule)
+  },
+  {
+    path: 'mensaje-amigo',
+    loadChildren: () => import('./pages/mensaje-amigo/mensaje-amigo.module').then( m => m.MensajeAmigoPageModule)
   },
 
 ];

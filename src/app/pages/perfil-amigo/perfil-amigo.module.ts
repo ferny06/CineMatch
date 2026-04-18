@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { PerfilAmigoPageRoutingModule } from './perfil-amigo-routing.module';
+import { SharedModule } from 'src/app/modules/shared/shared-module';
 
 import { PerfilAmigoPage } from './perfil-amigo.page';
 
@@ -13,7 +14,8 @@ import { PerfilAmigoPage } from './perfil-amigo.page';
     CommonModule,
     FormsModule,
     IonicModule,
-    PerfilAmigoPageRoutingModule
+    PerfilAmigoPageRoutingModule,
+    SharedModule,
   ],
   declarations: [PerfilAmigoPage]
 })

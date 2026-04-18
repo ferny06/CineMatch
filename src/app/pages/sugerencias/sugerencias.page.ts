@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { DatabaseService } from 'src/database/services/database.service';
 import { SupabaseService } from 'src/app/services/supabase.service';
 import { GeolocalizacionService } from 'src/app/services/geolocalizacion.service';
 import { PullSyncService } from 'src/app/services/pull-sync.service';
+import { BadgeService } from 'src/app/services/badge.service';
 
 interface UsuarioSugerido {
   id: string;
@@ -45,9 +47,15 @@ export class SugerenciasPage implements OnInit {
     private supabaseService: SupabaseService,
     private geoService: GeolocalizacionService,
     private pullSync: PullSyncService,
+    private router: Router,
+    private badgeService: BadgeService,
   ) {}
 
   ngOnInit() {}
+
+  verPerfilAmigo(amigo: any) {
+    this.router.navigate(['/perfil-amigo', amigo.id]);
+  }
 
   /**
    * Se ejecuta cada vez que el usuario entra a la página.
@@ -179,6 +187,7 @@ export class SugerenciasPage implements OnInit {
     const { data } = await this.supabaseService.obtenerNotificacionesNoLeidas(this.usuarioActual.id);
     this.notificaciones = data ?? [];
     this.contadorNoLeidas = this.notificaciones.length;
+    this.badgeService.setAmigos(this.contadorNoLeidas);
   }
 
   private async cargarEstadoConexiones(): Promise<void> {
@@ -224,6 +233,7 @@ export class SugerenciasPage implements OnInit {
     if (!error) {
       this.notificaciones = this.notificaciones.filter((n: any) => n.id !== notif.id);
       this.contadorNoLeidas = this.notificaciones.length;
+      this.badgeService.setAmigos(this.contadorNoLeidas);
       if (aceptar) await this.cargarAmigos();
     }
   }

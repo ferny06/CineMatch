@@ -1,49 +1,66 @@
 <ion-header class="ion-no-border">
   <ion-toolbar style="--background: #0B1222;">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/amigos" text="" color="light"></ion-back-button>
+      <ion-back-button defaultHref="/sugerencias" text="" color="light"></ion-back-button>
     </ion-buttons>
     <ion-title style="color: white;">Perfil de @{{ amigo.nombre_user }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content style="--background: #0B1222;">
+<ion-content style="--background: #0B1222; --padding-bottom: 70px;">
   <div class="profile-header ion-padding">
     <ion-avatar class="main-avatar">
       <img [src]="amigo.avatar_url" />
     </ion-avatar>
     <h2 class="text-white">{{ amigo.nombre }} {{ amigo.apellido_1 }}</h2>
     <p class="text-muted">{{ amigo.bio }}</p>
-    
+
     <div class="tags-container">
       <ion-badge color="warning" *ngFor="let p of amigo.preferencias">
         {{ p.nombre_genero }}
       </ion-badge>
     </div>
+
+    <ion-button (click)="irAMensajes()" expand="block" color="warning" class="mensaje-btn">
+      <ion-icon name="chatbubble-outline" slot="start"></ion-icon>
+      Enviar Mensaje
+    </ion-button>
   </div>
 
-  <div class="ion-padding">
+  <div class="ion-padding-horizontal ion-padding-top">
     <h3 class="text-white section-title">Reseñas Realizadas</h3>
-    
-    <ion-card *ngFor="let r of resenas" class="movie-card">
-      <ion-card-header>
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-          <ion-card-title class="text-white">{{ r.titulo }}</ion-card-title>
-          <ion-icon 
-            [name]="r.sync_status === 'SINCRO' ? 'cloud-done' : 'cloud-upload'"
-            [color]="r.sync_status === 'SINCRO' ? 'success' : 'warning'">
-          </ion-icon>
-        </div>
-        <div class="stars">
-          <ion-icon name="star" [color]="i < r.calificacion ? 'warning' : 'medium'" 
-                    *ngFor="let s of [1,2,3,4,5]; let i = index"></ion-icon>
-        </div>
-      </ion-card-header>
 
-      <ion-card-content class="text-light">
-        "{{ r.comentario }}"
-        <p class="date-text">{{ r.created_at }}</p>
-      </ion-card-content>
-    </ion-card>
+    <div *ngIf="resenas.length === 0" class="empty-resenas">
+      <ion-icon name="star-outline"></ion-icon>
+      <p>Sin reseñas aún</p>
+    </div>
+
+    <ion-grid *ngIf="resenas.length > 0">
+      <ion-row>
+        <ion-col size="6" *ngFor="let r of resenas">
+          <ion-card class="movie-card">
+            <div class="poster-container">
+              <img [src]="r.poster_url || 'assets/icon/no-poster.png'" />
+            </div>
+            <ion-card-header>
+              <ion-card-subtitle>{{ r.titulo }}</ion-card-subtitle>
+              <div class="stars-mini">
+                <ion-icon
+                  *ngFor="let s of [1,2,3,4,5]"
+                  [name]="r.calificacion >= s ? 'star' : 'star-outline'"
+                  class="star-mini-icon">
+                </ion-icon>
+              </div>
+              <p class="date-text">{{ r.created_at | date:'dd/MM/yyyy' }}</p>
+            </ion-card-header>
+            <ion-card-content class="comentario-text" *ngIf="r.comentario">
+              "{{ r.comentario }}"
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
   </div>
 </ion-content>
+
+<app-footer-nav activo="amigos"></app-footer-nav>

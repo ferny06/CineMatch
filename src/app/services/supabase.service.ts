@@ -903,4 +903,163 @@ export class SupabaseService {
       .replace(/\s+/g, '-')                  // Espacios → guiones
       .replace(/-+/g, '-');                  // Colapsar guiones múltiples
   }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // PERFIL DE AMIGO — lectura de datos de otro usuario
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  async getUsuarioPorId(id: string): Promise<SupabaseResult<any>> {
+    const { data, error } = await this.supabase
+      .from('usuario')
+      .select('id, nombre_user, nombre, apellido_1, bio, avatar_url')
+      .eq('id', id)
+      .single();
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
+  async obtenerPreferenciasDeUsuario(userId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('usuario_genero_preferencia')
+      .select('peso_pref, genero ( nombre_genero )')
+      .eq('usuario_id', userId)
+      .order('peso_pref', { ascending: false })
+      .limit(5);
+    if (error) return { data: null, error: error.message };
+    const prefs = (data ?? []).map((row: any) => ({
+      nombre_genero: row.genero?.nombre_genero ?? '',
+      peso_pref: row.peso_pref,
+    }));
+    return { data: prefs, error: null };
+  }
+
+  async obtenerResenasDeUsuario(userId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('resena')
+      .select('calificacion, comentario, fecha_creacion, pelicula ( titulo, poster_url )')
+      .eq('usuario_id', userId)
+      .order('fecha_creacion', { ascending: false });
+    if (error) return { data: null, error: error.message };
+    const resenas = (data ?? []).map((row: any) => ({
+      titulo:      row.pelicula?.titulo ?? 'Película desconocida',
+      poster_url:  row.pelicula?.poster_url ?? null,
+      calificacion: row.calificacion,
+      comentario:  row.comentario ?? '',
+      created_at:  row.fecha_creacion,
+    }));
+    return { data: resenas, error: null };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // CONVERSACIONES — buscar/crear y listar con info de amigo
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Encuentra la conversación entre dos usuarios o la crea si no existe.
+   * Requiere que haya una conexión aceptada entre ellos.
+   */
+  async obtenerOCrearConversacion(
+    usuarioActualId: string,
+    amigoId: string
+  ): Promise<SupabaseResult<string>> {
+    // 1. Buscar la conexión aceptada entre ambos usuarios
+    const { data: conexData, error: conexError } = await this.supabase
+      .from('conexion')
+      .select('id')
+      .eq('estado', 'aceptada')
+      .or(
+        `and(solicitante_id.eq.${usuarioActualId},destinatario_id.eq.${amigoId}),` +
+        `and(solicitante_id.eq.${amigoId},destinatario_id.eq.${usuarioActualId})`
+      )
+      .maybeSingle();
+
+    if (conexError) return { data: null, error: conexError.message };
+    if (!conexData) return { data: null, error: 'No existe conexión aceptada entre los usuarios.' };
+
+    const conexionId = conexData.id;
+
+    // 2. Verificar si ya existe una conversación para esa conexión
+    const { data: convExistente } = await this.supabase
+      .from('conversacion')
+      .select('id')
+      .eq('conexion_id', conexionId)
+      .maybeSingle();
+
+    if (convExistente) return { data: convExistente.id, error: null };
+
+    // 3. Crear la conversación
+    const { data: nuevaConv, error: createError } = await this.supabase
+      .from('conversacion')
+      .insert({ conexion_id: conexionId })
+      .select('id')
+      .single();
+
+    return { data: nuevaConv?.id ?? null, error: createError?.message ?? null };
+  }
+
+  async pullMensajesDeConversacion(conversacionId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('mensaje')
+      .select('id, emisor_id, contenido, leido, fecha_envio')
+      .eq('conversacion_id', conversacionId)
+      .order('fecha_envio', { ascending: true });
+    if (error) return { data: null, error: error.message };
+    return { data: data ?? [], error: null };
+  }
+
+  async marcarMensajesComoLeidos(conversacionId: string, receptorId: string): Promise<SupabaseResult<null>> {
+    const { error } = await this.supabase
+      .from('mensaje')
+      .update({ leido: 'S' })
+      .eq('conversacion_id', conversacionId)
+      .neq('emisor_id', receptorId)
+      .eq('leido', 'N');
+    return { data: null, error: error?.message ?? null };
+  }
+
+  async obtenerConversacionesConAmigos(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('conversacion')
+      .select(`
+        id,
+        conexion!inner (
+          solicitante_id,
+          destinatario_id,
+          solicitante:usuario!conexion_solicitante_fk ( id, nombre_user, nombre, avatar_url ),
+          destinatario:usuario!conexion_destinatario_fk ( id, nombre_user, nombre, avatar_url )
+        )
+      `)
+      .or(`solicitante_id.eq.${usuarioId},destinatario_id.eq.${usuarioId}`, {
+        referencedTable: 'conexion',
+      });
+
+    if (error) return { data: null, error: error.message };
+
+    const conversaciones = (data ?? []).map((row: any) => {
+      const conexion = row.conexion;
+      const esSolicitante = conexion.solicitante_id === usuarioId;
+      const amigo = esSolicitante ? conexion.destinatario : conexion.solicitante;
+      const amigoId = esSolicitante ? conexion.destinatario_id : conexion.solicitante_id;
+      return {
+        conversacionId: row.id,
+        amigoId,
+        nombre:    amigo?.nombre_user || amigo?.nombre || 'Usuario',
+        avatar_url: amigo?.avatar_url ?? null,
+      };
+    });
+
+    return { data: conversaciones, error: null };
+  }
+
+  async contarMensajesNoLeidos(usuarioId: string): Promise<number> {
+    const { data: convs } = await this.obtenerConversacionesConAmigos(usuarioId);
+    if (!convs?.length) return 0;
+    const convIds = convs.map((c: any) => c.conversacionId);
+    const { count } = await this.supabase
+      .from('mensaje')
+      .select('id', { count: 'exact', head: true })
+      .in('conversacion_id', convIds)
+      .neq('emisor_id', usuarioId)
+      .eq('leido', 'N');
+    return count ?? 0;
+  }
 }

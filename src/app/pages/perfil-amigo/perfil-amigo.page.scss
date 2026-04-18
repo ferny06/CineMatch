@@ -1,3 +1,7 @@
+ion-content {
+  --background: #0B1222;
+}
+
 .profile-header {
   display: flex;
   flex-direction: column;
@@ -20,20 +24,62 @@
   justify-content: center;
 }
 
-.movie-card {
-  --background: #1a2333;
-  margin: 0 0 15px 0;
-  border-radius: 12px;
+.mensaje-btn {
+  margin-top: 14px;
+  width: 100%;
 }
 
 .section-title {
   font-size: 1rem;
   font-weight: bold;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
+
+.empty-resenas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  color: #8899ac;
+
+  ion-icon { font-size: 3rem; margin-bottom: 10px; }
+  p { font-size: 0.9rem; }
+}
+
+.movie-card {
+  margin: 8px 4px;
+  background: #161f2e !important;
+  border-radius: 12px;
+  border: 1px solid #2a3548;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+
+  .poster-container {
+    img {
+      height: 200px;
+      object-fit: cover;
+      width: 100%;
+      display: block;
+    }
+  }
+
+  ion-card-header {
+    padding: 10px 8px;
+    ion-card-subtitle { color: #ffffff !important; font-weight: 700; font-size: 0.85rem; }
+  }
+}
+
+.stars-mini { display: flex; gap: 2px; margin: 4px 0; }
+.star-mini-icon { color: #e2b41d; font-size: 0.85rem; }
 
 .date-text {
   font-size: 0.7rem;
-  margin-top: 10px;
-  color: #8e94a0;
+  color: #8899ac;
+  margin-top: 4px;
+}
+
+.comentario-text {
+  font-size: 0.8rem;
+  color: #c8d3e0;
+  font-style: italic;
+  padding-top: 0;
 }

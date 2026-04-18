@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-        <ion-buttons slot="start">
+    <ion-buttons slot="start">
       <ion-back-button defaultHref="/home" text=""></ion-back-button>
     </ion-buttons>
     <ion-title>Mis Mensajes</ion-title>
@@ -8,33 +8,41 @@
 </ion-header>
 
 <ion-content>
-  <ion-list lines="full" style="background: transparent;">
-    
-    <ion-item *ngFor="let m of mensajes" (click)="irAConversacion(m.local_conversacion_id)" style="--background: transparent;">
+
+  <div *ngIf="cargando" class="loading-state">
+    <ion-spinner name="crescent" color="warning"></ion-spinner>
+  </div>
+
+  <ion-list *ngIf="!cargando" lines="full" style="background: transparent;">
+
+    <div *ngIf="conversaciones.length === 0" class="empty-state">
+      <ion-icon name="chatbubbles-outline"></ion-icon>
+      <p>No tienes conversaciones aún.<br>¡Envíale un mensaje a un amigo!</p>
+    </div>
+
+    <ion-item
+      *ngFor="let c of conversaciones"
+      (click)="irAConversacion(c.amigoId)"
+      style="--background: transparent;"
+    >
       <ion-avatar slot="start">
-        <img src="assets/icon/favicon.png" />
+        <img [src]="c.avatar_url" />
       </ion-avatar>
 
       <ion-label>
         <div style="display: flex; justify-content: space-between;">
-          <h2 style="color: white; font-weight: 600;">Usuario: {{ m.emisor_id }}</h2>
-          <span style="color: #8e94a0; font-size: 0.8rem;">{{ m.created_at }}</span>
+          <h2 style="color: white; font-weight: 600;">{{ c.nombre }}</h2>
+          <span style="color: #8e94a0; font-size: 0.8rem;">{{ formatearFecha(c.fecha) }}</span>
         </div>
-        
-        <p [style.color]="m.leido === 'N' ? 'white' : '#8e94a0'"
-           [style.font-weight]="m.leido === 'N' ? 'bold' : 'normal'">
-          {{ m.contenido }}
+        <p
+          [style.color]="c.leido === 'N' ? 'white' : '#8e94a0'"
+          [style.font-weight]="c.leido === 'N' ? 'bold' : 'normal'"
+        >
+          {{ c.ultimoMensaje }}
         </p>
       </ion-label>
 
-      <div slot="end" style="text-align: right;">
-        <ion-icon 
-          [name]="m.sync_status === 'SINCRO' ? 'cloud-done' : 'cloud-upload'"
-          [color]="m.sync_status === 'SINCRO' ? 'success' : 'warning'">
-        </ion-icon>
-        <br>
-        <small style="color: #444;" *ngIf="m.server_id">ID: {{ m.server_id }}</small>
-      </div>
+      <ion-badge *ngIf="c.leido === 'N'" slot="end" color="warning">•</ion-badge>
     </ion-item>
 
   </ion-list>

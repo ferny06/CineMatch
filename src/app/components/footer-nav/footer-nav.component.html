@@ -1,6 +1,6 @@
 <ion-footer class="ion-no-border">
   <div class="nav-container">
-    
+
     <div (click)="navegar('home')" class="nav-item" [class.active]="activo === 'home'">
       <img src="assets/icon/home.png">
       <span>Home</span>
@@ -12,7 +12,10 @@
     </div>
 
     <div (click)="navegar('sugerencias')" class="nav-item" [class.active]="activo === 'amigos'">
-      <img src="assets/icon/amigos.png">
+      <div class="icon-wrap">
+        <img src="assets/icon/amigos.png">
+        <span *ngIf="badgeAmigos > 0" class="notif-dot"></span>
+      </div>
       <span>Amigos</span>
     </div>
 
@@ -22,7 +25,10 @@
     </div>
 
     <div (click)="navegar('mensajes')" class="nav-item" [class.active]="activo === 'mensajes'">
-      <img src="assets/icon/mensajes.png">
+      <div class="icon-wrap">
+        <img src="assets/icon/mensajes.png">
+        <span *ngIf="badgeMensajes > 0" class="notif-dot"></span>
+      </div>
       <span>Mensajes</span>
     </div>
 
