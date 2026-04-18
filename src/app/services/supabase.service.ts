@@ -69,9 +69,10 @@ interface UsuarioRow {
 /** Fila de la tabla `lista_peliculas` en Supabase */
 interface ListaRow {
   usuario_id: string;
-  pelicula_id: string;
-  estado: string;
-  fecha_visto?: string | null;
+  nombre: string;
+  descripcion?: string | null;
+  pelicula_id: number[];         // INTEGER[] en Supabase (tmdb_ids)
+  estado: 'activa' | 'borrada';
   fecha_creacion: string;
 }
 
@@ -364,10 +365,10 @@ export class SupabaseService {
   async insertLista(lista: LocalLista): Promise<SupabaseResult<string>> {
     const payload: ListaRow = {
       usuario_id:    lista.usuario_id,
-      pelicula_id:   lista.pelicula_id,
+      nombre:        lista.nombre,
+      descripcion:   lista.descripcion ?? null,
+      pelicula_id:   lista.peliculas_ids,
       estado:        lista.estado,
-      fecha_visto:   lista.fecha_visto  ?? null,
-      // `created_at` en SQLite es equivalente a `fecha_creacion` en Supabase
       fecha_creacion: lista.created_at,
     };
 
@@ -381,19 +382,17 @@ export class SupabaseService {
   }
 
   /**
-   * Actualiza una entrada existente en `lista_peliculas` de Supabase.
-   *
-   * Solo se actualizan los campos modificables por el usuario (estado, fecha_visto).
-   *
-   * @param serverId UUID de Supabase de la entrada a actualizar
-   * @param lista    Registro local con los valores actualizados
+   * Actualiza una lista existente en `lista_peliculas` de Supabase.
+   * El borrado es suave: se actualiza estado a 'borrada' en lugar de eliminar.
    */
   async updateLista(serverId: string, lista: LocalLista): Promise<SupabaseResult> {
     const { data, error } = await this.supabase
       .from('lista_peliculas')
       .update({
+        nombre:      lista.nombre,
+        descripcion: lista.descripcion ?? null,
+        pelicula_id: lista.peliculas_ids,
         estado:      lista.estado,
-        fecha_visto: lista.fecha_visto ?? null,
       })
       .eq('id', serverId)
       .select()
@@ -402,15 +401,11 @@ export class SupabaseService {
     return { data, error: error?.message ?? null };
   }
 
-  /**
-   * Elimina una entrada de `lista_peliculas` en Supabase.
-   *
-   * @param serverId UUID de Supabase de la entrada a eliminar
-   */
+  /** Soft-delete: marca la lista como 'borrada' en Supabase. */
   async deleteLista(serverId: string): Promise<SupabaseResult> {
     const { data, error } = await this.supabase
       .from('lista_peliculas')
-      .delete()
+      .update({ estado: 'borrada' })
       .eq('id', serverId);
 
     return { data, error: error?.message ?? null };
@@ -506,14 +501,23 @@ export class SupabaseService {
   async pullListas(usuarioId: string): Promise<SupabaseResult<any[]>> {
     const { data, error } = await this.supabase
       .from('lista_peliculas')
+      .select('id, nombre, descripcion, pelicula_id, estado, fecha_creacion')
+      .eq('usuario_id', usuarioId)
+      .neq('estado', 'borrada');
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
+  /** Obtiene las listas activas de un conjunto de usuarios (amigos). */
+  async obtenerListasAmigos(amigoIds: string[]): Promise<SupabaseResult<any[]>> {
+    if (!amigoIds.length) return { data: [], error: null };
+    const { data, error } = await this.supabase
+      .from('lista_peliculas')
       .select(`
-        id, estado, fecha_visto, fecha_creacion,
-        pelicula!inner (
-          id, tmdb_id, titulo, sinopsis, poster_url,
-          fecha_estreno, duracion_min, promedio_votos, idioma_original
-        )
+        id, nombre, descripcion, pelicula_id, estado, fecha_creacion,
+        usuario:usuario_id ( id, nombre_user, nombre, avatar_url )
       `)
-      .eq('usuario_id', usuarioId);
+      .in('usuario_id', amigoIds)
+      .eq('estado', 'activa');
     return { data: data ?? null, error: error?.message ?? null };
   }
 

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
 import { DatabaseService } from '../../../database/services/database.service';
 import { DB_TABLES } from '../../../database/database.constants';
+import { PullSyncService } from '../../services/pull-sync.service';
 
 @Component({
   selector: 'app-login',
@@ -21,6 +22,7 @@ export class LoginPage {
     private router: Router,
     private supabaseService: SupabaseService,
     private databaseService: DatabaseService,
+    private pullSyncService: PullSyncService,
   ) { }
 
   // función para el botón ingresar
@@ -57,7 +59,10 @@ export class LoginPage {
     // Restaurar local_usuario si está vacío.
     // Ocurre cuando la BD se reinicializa (reinstalación, cambio de versión, etc.)
     // pero la sesión Auth de Supabase persiste en el WebView.
-    await this.restaurarUsuarioLocalSiVacio(data.user!.id);
+    const usuarioId = await this.restaurarUsuarioLocalSiVacio(data.user!.id);
+    if (usuarioId) {
+      await this.pullSyncService.pullPreferencias(usuarioId);
+    }
 
     this.router.navigate(['/home']);
   }
@@ -67,7 +72,7 @@ export class LoginPage {
    * y lo inserta localmente. Garantiza que las páginas que dependen de local_usuario
    * (crear-resena, perfil, etc.) siempre encuentren datos tras el login.
    */
-  private async restaurarUsuarioLocalSiVacio(authUserId: string): Promise<void> {
+  private async restaurarUsuarioLocalSiVacio(authUserId: string): Promise<string | null> {
     try {
       const db = this.databaseService.obtenerConexion();
       const check = await db.query(
@@ -75,13 +80,13 @@ export class LoginPage {
         [authUserId]
       );
       if (check.values && check.values.length > 0) {
-        return; // Ya tiene datos para este usuario — no hace nada
+        return check.values[0].id as string;
       }
 
       const { data: perfil, error: fetchError } = await this.supabaseService.getUsuarioPorAuthId(authUserId);
       if (fetchError || !perfil) {
         console.warn('[LoginPage] No se pudo obtener el perfil desde Supabase:', fetchError);
-        return;
+        return null;
       }
 
       const ahora = new Date().toISOString();
@@ -108,8 +113,10 @@ export class LoginPage {
         ]
       );
       console.log('[LoginPage] local_usuario restaurado desde Supabase. id:', perfil.id);
+      return perfil.id as string;
     } catch (err) {
       console.warn('[LoginPage] Error al restaurar local_usuario:', err);
+      return null;
     }
   }
 

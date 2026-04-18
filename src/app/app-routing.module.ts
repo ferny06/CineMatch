@@ -54,6 +54,10 @@ const routes: Routes = [
     path: 'mensaje-amigo',
     loadChildren: () => import('./pages/mensaje-amigo/mensaje-amigo.module').then( m => m.MensajeAmigoPageModule)
   },
+  {
+    path: 'formulario-lista',
+    loadChildren: () => import('./pages/formulario-lista/formulario-lista.module').then( m => m.FormularioListaPageModule)
+  },
 
 ];
 

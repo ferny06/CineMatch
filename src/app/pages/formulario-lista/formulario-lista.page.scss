@@ -1,0 +1,153 @@
+:host {
+  display: block;
+  height: 100%;
+  --background: #0B1222;
+}
+
+ion-content {
+  --background: #0B1222;
+}
+
+ion-toolbar {
+  --background: #0B1222;
+  --color: #ffffff;
+}
+
+.form-section {
+  padding: 16px;
+
+  .input-item {
+    --background: #161f2e;
+    --border-radius: 10px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    margin-bottom: 8px;
+    border: 1px solid #2a3548;
+    border-radius: 10px;
+
+    ion-input, ion-textarea {
+      --color: #ffffff;
+      --placeholder-color: #8899ac;
+    }
+  }
+}
+
+.section-block {
+  padding: 8px 16px;
+}
+
+.section-label {
+  color: #8899ac;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 8px 0 10px;
+}
+
+/* Películas agregadas — scroll horizontal */
+.agregadas-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.agregada-card {
+  position: relative;
+  flex-shrink: 0;
+  width: 80px;
+
+  .agregada-poster {
+    width: 80px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .quitar-btn {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    ion-icon {
+      font-size: 1.4rem;
+      color: #e74c3c;
+    }
+  }
+
+  .agregada-titulo {
+    font-size: 0.65rem;
+    color: #c0ccd8;
+    margin-top: 4px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+ion-searchbar.custom-search {
+  --background: #161f2e;
+  --color: #ffffff;
+  --placeholder-color: #8899ac;
+  --border-radius: 10px;
+  --box-shadow: none;
+  padding: 0;
+}
+
+/* Lista de resultados */
+.resultados-list {
+  padding: 0 16px;
+}
+
+.resultado-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #1e2d40;
+
+  .resultado-poster {
+    width: 40px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .resultado-info {
+    flex: 1;
+    overflow: hidden;
+
+    .resultado-titulo {
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .resultado-anio {
+      color: #8899ac;
+      font-size: 0.75rem;
+      margin: 2px 0 0;
+    }
+  }
+
+  .add-btn {
+    --color: #4A90E2;
+    ion-icon { font-size: 1.6rem; }
+  }
+}
+
+.empty-search {
+  text-align: center;
+  color: #8899ac;
+  padding: 24px 0;
+  font-size: 0.9rem;
+}

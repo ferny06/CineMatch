@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Geolocation } from '@capacitor/geolocation';
 
 export interface Coordenadas {
@@ -24,6 +26,18 @@ interface LocationAccuracyPlugin {
   providedIn: 'root',
 })
 export class GeolocalizacionService {
+
+  constructor(private http: HttpClient) {}
+
+  async obtenerCodigoPais(latitud: number, longitud: number): Promise<string | null> {
+    try {
+      const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitud}&longitude=${longitud}&localityLanguage=en`;
+      const res = await firstValueFrom(this.http.get<any>(url));
+      return res.countryCode ?? null;
+    } catch {
+      return null;
+    }
+  }
 
   /**
    * Solicita permiso de ubicación y obtiene las coordenadas actuales.

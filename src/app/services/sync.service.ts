@@ -399,7 +399,16 @@ export class SyncService {
       [item.registro_id]
     );
 
-    const lista: LocalLista | undefined = resultado.values?.[0];
+    const listaRaw: any = resultado.values?.[0];
+    const lista: LocalLista | undefined = listaRaw
+      ? {
+          ...listaRaw,
+          // SQLite devuelve peliculas_ids como TEXT; deserializar al tipo correcto
+          peliculas_ids: typeof listaRaw.peliculas_ids === 'string'
+            ? JSON.parse(listaRaw.peliculas_ids || '[]')
+            : (listaRaw.peliculas_ids ?? []),
+        }
+      : undefined;
 
     if (item.operacion === SYNC_OPERACION.DELETE) {
       // Para DELETE solo necesitamos el server_id; el registro local puede

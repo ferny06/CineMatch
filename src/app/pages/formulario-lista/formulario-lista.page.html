@@ -1,0 +1,90 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/mis-listas" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nueva Lista</ion-title>
+    <ion-buttons slot="end">
+      <ion-button [disabled]="!puedeGuardar || guardando" (click)="guardarLista()" color="primary">
+        <ion-spinner *ngIf="guardando" name="crescent" slot="icon-only"></ion-spinner>
+        <span *ngIf="!guardando">Guardar</span>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <!-- Datos de la lista -->
+  <div class="form-section">
+    <ion-item lines="none" class="input-item">
+      <ion-input
+        label="Nombre de la lista *"
+        labelPlacement="floating"
+        [(ngModel)]="nombre"
+        placeholder="Ej: Mis favoritas de acción"
+        maxlength="100">
+      </ion-input>
+    </ion-item>
+
+    <ion-item lines="none" class="input-item mt-2">
+      <ion-textarea
+        label="Descripción"
+        labelPlacement="floating"
+        [(ngModel)]="descripcion"
+        placeholder="Opcional: cuéntanos de qué trata esta lista"
+        rows="2"
+        maxlength="300">
+      </ion-textarea>
+    </ion-item>
+  </div>
+
+  <!-- Películas ya agregadas -->
+  <div class="section-block" *ngIf="peliculasAgregadas.length > 0">
+    <p class="section-label">Películas en la lista ({{ peliculasAgregadas.length }})</p>
+    <div class="agregadas-scroll">
+      <div class="agregada-card" *ngFor="let peli of peliculasAgregadas">
+        <img [src]="posterUrl(peli.poster_path)" class="agregada-poster" />
+        <button class="quitar-btn" (click)="quitarPelicula(peli.id)">
+          <ion-icon name="close-circle"></ion-icon>
+        </button>
+        <p class="agregada-titulo">{{ peli.title }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buscador -->
+  <div class="section-block">
+    <p class="section-label">Agregar películas</p>
+    <ion-searchbar
+      placeholder="Buscar película..."
+      mode="ios"
+      class="custom-search"
+      [debounce]="300"
+      (ionInput)="buscarPelicula($event)">
+    </ion-searchbar>
+  </div>
+
+  <!-- Resultados de búsqueda -->
+  <div *ngIf="buscando && resultadosBusqueda.length > 0" class="resultados-list">
+    <div class="resultado-item" *ngFor="let peli of resultadosBusqueda">
+      <img [src]="posterUrl(peli.poster_path)" class="resultado-poster" />
+      <div class="resultado-info">
+        <p class="resultado-titulo">{{ peli.title }}</p>
+        <p class="resultado-anio">{{ peli.release_date | date:'yyyy' }}</p>
+      </div>
+      <ion-button
+        fill="clear"
+        [disabled]="estaAgregada(peli.id)"
+        (click)="agregarPelicula(peli)"
+        class="add-btn">
+        <ion-icon [name]="estaAgregada(peli.id) ? 'checkmark-circle' : 'add-circle-outline'" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+
+  <div *ngIf="buscando && resultadosBusqueda.length === 0" class="empty-search">
+    <p>Sin resultados</p>
+  </div>
+
+</ion-content>

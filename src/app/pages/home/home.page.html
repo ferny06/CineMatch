@@ -1,46 +1,71 @@
 <ion-content class="bg-dark">
-  <div  class="container" style="margin-top: 50px;">
- <div class="d-flex justify-content-between align-items-center mb-3 px-1" style="line-height: 1;">
-  
-  <img src="assets/icon/logo.png" style="width: 32px; height: auto; display: block; margin-right: 10px">
-  
-<span class="saludo-texto fw-light m-0 p-0" style="font-size: 1rem; display: flex; align-items: center; margin-top: 3px">
-  ¡Hola, {{ nombre_user }}!
-</span>
-
-</div>
-    <ion-searchbar placeholder="¿Qué película buscas?" 
-  class="custom-search" 
-  mode="ios"
-  (ionInput)="buscarPelicula($event)"
-  [debounce]="250"></ion-searchbar>
+  <div class="container" style="margin-top: 50px;">
+    <div class="d-flex justify-content-between align-items-center mb-3 px-1" style="line-height: 1;">
+      <img src="assets/icon/logo.png" style="width: 32px; height: auto; display: block; margin-right: 10px">
+      <span class="saludo-texto fw-light m-0 p-0" style="font-size: 1rem; display: flex; align-items: center; margin-top: 3px">
+        ¡Hola, {{ nombre_user }}!
+      </span>
+    </div>
+    <ion-searchbar placeholder="¿Qué película buscas?"
+      class="custom-search"
+      mode="ios"
+      (ionInput)="buscarPelicula($event)"
+      [debounce]="250"></ion-searchbar>
   </div>
 
-  <div class="mt-5">
+  <!-- Resultados de búsqueda -->
+  <div class="mt-5" *ngIf="buscando">
     <div class="container">
-      <p class="section-title">Recomendadas para ti</p>
+      <p class="section-title">Resultados de búsqueda</p>
     </div>
-    
     <div class="scroll-horizontal ps-3">
-      <div class="movie-card" *ngFor="let peli of peliculas.slice(0,10)" (click)="verDetalle(peli.id)">
+      <div class="movie-card" *ngFor="let peli of peliculas" (click)="verDetalle(peli.id)">
         <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
       </div>
     </div>
   </div>
 
-  <div class="mt-5 pt-5 mb-5">
-    <div class="container">
-      <p class="section-title">Populares en tu ciudad</p>
-    </div>
+  <!-- Secciones personalizadas (ocultas durante búsqueda) -->
+  <ng-container *ngIf="!buscando">
 
-    <div class="scroll-horizontal ps-3">
-      <div class="movie-card" *ngFor="let peli of peliculas.slice(10, 20)" (click)="verDetalle(peli.id)">
-        <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
+    <!-- Recomendadas para ti -->
+    <div class="mt-5">
+      <div class="container">
+        <p class="section-title">Recomendadas para ti</p>
+      </div>
+
+      <div class="scroll-horizontal ps-3" *ngIf="!cargandoRecomendadas">
+        <div class="movie-card" *ngFor="let peli of peliculasRecomendadas" (click)="verDetalle(peli.id)">
+          <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
+        </div>
+      </div>
+      <div class="scroll-horizontal ps-3" *ngIf="cargandoRecomendadas">
+        <div class="movie-card" *ngFor="let i of [0,1,2,3,4]">
+          <div class="figma-poster skeleton-card"></div>
+        </div>
       </div>
     </div>
-  </div>
 
- 
+    <!-- Populares en tu país -->
+    <div class="mt-5 pt-5 mb-5">
+      <div class="container">
+        <p class="section-title">Populares en tu país</p>
+      </div>
+
+      <div class="scroll-horizontal ps-3" *ngIf="!cargandoPopulares">
+        <div class="movie-card" *ngFor="let peli of peliculasPopulares" (click)="verDetalle(peli.id)">
+          <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_path" class="figma-poster">
+        </div>
+      </div>
+      <div class="scroll-horizontal ps-3" *ngIf="cargandoPopulares">
+        <div class="movie-card" *ngFor="let i of [0,1,2,3,4]">
+          <div class="figma-poster skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
 </ion-content>
 
 <app-footer-nav activo="home"></app-footer-nav>

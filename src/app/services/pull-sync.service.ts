@@ -59,11 +59,10 @@ export class PullSyncService {
     }
 
     const db = this.databaseService.obtenerConexion();
-    const ahora = new Date().toISOString();
 
     for (const l of data) {
-      const pel = l.pelicula;
-      const peliculaLocalId = await this.upsertPelicula(db, pel, ahora);
+      // pelicula_id en Supabase es INTEGER[] (tmdb_ids); serializar a JSON para SQLite
+      const peliculasJson = JSON.stringify(l.pelicula_id ?? []);
 
       const check = await db.query(
         'SELECT local_id FROM local_lista WHERE server_id = ?', [l.id]
@@ -71,20 +70,20 @@ export class PullSyncService {
       if (check.values?.length) {
         await db.run(
           `UPDATE local_lista
-           SET estado=?, fecha_visto=?
+           SET nombre=?, descripcion=?, peliculas_ids=?, estado=?
            WHERE server_id=?`,
-          [l.estado, l.fecha_visto ?? null, l.id]
+          [l.nombre, l.descripcion ?? null, peliculasJson, l.estado, l.id]
         );
       } else {
         await db.run(
           `INSERT INTO local_lista
-             (local_id, server_id, usuario_id, pelicula_id,
-              estado, fecha_visto, sync_status, created_at)
-           VALUES (?,?,?,?,?,?,?,?)`,
+             (local_id, server_id, usuario_id, nombre, descripcion,
+              peliculas_ids, estado, sync_status, created_at)
+           VALUES (?,?,?,?,?,?,?,?,?)`,
           [
-            crypto.randomUUID(), l.id, usuarioId, peliculaLocalId,
-            l.estado, l.fecha_visto ?? null,
-            'synced', l.fecha_creacion,
+            crypto.randomUUID(), l.id, usuarioId,
+            l.nombre, l.descripcion ?? null, peliculasJson,
+            l.estado, 'synced', l.fecha_creacion,
           ]
         );
       }

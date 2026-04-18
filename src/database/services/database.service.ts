@@ -141,14 +141,16 @@ export class DatabaseService {
       },
       {
         statement: `CREATE TABLE IF NOT EXISTS local_lista (
-          local_id    TEXT NOT NULL PRIMARY KEY,
-          server_id   TEXT,
-          usuario_id  TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
-          pelicula_id TEXT NOT NULL REFERENCES local_pelicula(id) ON DELETE CASCADE,
-          estado      TEXT NOT NULL,
-          fecha_visto TEXT,
-          sync_status TEXT NOT NULL DEFAULT 'pending',
-          created_at  TEXT NOT NULL
+          local_id      TEXT NOT NULL PRIMARY KEY,
+          server_id     TEXT,
+          usuario_id    TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
+          nombre        TEXT NOT NULL,
+          descripcion   TEXT,
+          peliculas_ids TEXT NOT NULL DEFAULT '[]',
+          estado        TEXT NOT NULL DEFAULT 'activa' CHECK(estado IN ('activa','borrada')),
+          sync_status   TEXT NOT NULL DEFAULT 'pending',
+          synced_at     TEXT,
+          created_at    TEXT NOT NULL
         );`,
         values: [],
       },
@@ -213,7 +215,6 @@ export class DatabaseService {
         values: [],
       },
       { statement: `CREATE INDEX IF NOT EXISTS idx_lista_usuario   ON local_lista(usuario_id);`,   values: [] },
-      { statement: `CREATE INDEX IF NOT EXISTS idx_lista_pelicula  ON local_lista(pelicula_id);`,  values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_resena_usuario  ON local_resena(usuario_id);`,  values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_resena_pelicula ON local_resena(pelicula_id);`, values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_mensaje_conv    ON local_mensaje(conversacion_id);`, values: [] },
@@ -223,10 +224,14 @@ export class DatabaseService {
       { statement: `CREATE INDEX IF NOT EXISTS idx_pref_genero_tmdb    ON local_usuario_genero_preferencia(tmdb_genero_id);`, values: [] },
     ], false);
 
-    // Migración incremental: solo agrega la columna si aún no existe.
-    // PRAGMA table_info evita lanzar errores nativos visibles en logcat.
+    // Migración incremental: agrega columnas si aún no existen.
     await this.agregarColumnaSiFalta('local_pelicula', 'idioma_original', 'TEXT');
     await this.agregarColumnaSiFalta('local_resena',   'synced_at',       'TEXT');
+    await this.agregarColumnaSiFalta('local_lista',    'synced_at',       'TEXT');
+
+    // Migración de local_lista: el esquema anterior usaba pelicula_id (FK individual).
+    // Si se detecta el esquema viejo, se descarta y recrea con el nuevo diseño.
+    await this.migrarTablaLista();
 
     console.log('[DatabaseService] Tablas creadas o verificadas correctamente.');
   }
@@ -254,6 +259,36 @@ export class DatabaseService {
     // Las tablas relacionadas (local_lista, local_resena, local_mensaje,
     // local_usuario_genero_preferencia) se limpian por CASCADE automáticamente.
     console.log('[DatabaseService] Datos de usuario eliminados.');
+  }
+
+  /**
+   * Detecta si local_lista tiene el esquema viejo (pelicula_id como FK individual)
+   * y lo recrea con el nuevo diseño (peliculas_ids como JSON array de tmdb_ids).
+   */
+  private async migrarTablaLista(): Promise<void> {
+    const info = await this.db.query('PRAGMA table_info(local_lista)');
+    const columnas: string[] = (info.values ?? []).map((c: any) => c.name);
+    const esEsquemaViejo = columnas.includes('pelicula_id') && !columnas.includes('nombre');
+    if (!esEsquemaViejo) return;
+
+    await this.db.run(`DELETE FROM cola_sync WHERE tabla = 'local_lista'`);
+    await this.db.run(`DROP TABLE IF EXISTS local_lista`);
+    await this.db.executeSet([{
+      statement: `CREATE TABLE local_lista (
+        local_id      TEXT NOT NULL PRIMARY KEY,
+        server_id     TEXT,
+        usuario_id    TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
+        nombre        TEXT NOT NULL,
+        descripcion   TEXT,
+        peliculas_ids TEXT NOT NULL DEFAULT '[]',
+        estado        TEXT NOT NULL DEFAULT 'activa' CHECK(estado IN ('activa','borrada')),
+        sync_status   TEXT NOT NULL DEFAULT 'pending',
+        synced_at     TEXT,
+        created_at    TEXT NOT NULL
+      );`,
+      values: [],
+    }]);
+    console.log('[DatabaseService] local_lista migrada al nuevo esquema.');
   }
 
   /**

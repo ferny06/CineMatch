@@ -9,6 +9,7 @@
 
 <ion-content>
 
+  <!-- Botón agregar -->
   <div class="add-btn-container">
     <ion-button expand="block" fill="outline" class="add-lista-btn" (click)="agregarLista()">
       <ion-icon name="add-circle-outline" slot="start"></ion-icon>
@@ -16,31 +17,79 @@
     </ion-button>
   </div>
 
-  <div *ngIf="listas.length === 0" class="empty-container">
-    <ion-icon name="list-outline"></ion-icon>
-    <p>No tienes listas guardadas</p>
+  <!-- Spinner inicial -->
+  <div *ngIf="cargando" class="spinner-container">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
   </div>
 
-  <ion-grid *ngIf="listas.length > 0">
-    <ion-row>
-      <ion-col size="6" *ngFor="let lista of listas">
-        <ion-card class="movie-card" [routerLink]="['/pelicula', lista.pelicula_id]">
-          <div class="poster-container">
-            <img [src]="lista.poster_url" />
-            <ion-badge [color]="lista.sync_status === 'synced' ? 'success' : 'warning'">
-              <ion-icon [name]="lista.sync_status === 'synced' ? 'cloud-done' : 'cloud-upload'"></ion-icon>
-            </ion-badge>
+  <ng-container *ngIf="!cargando">
+
+    <!-- ── Sección: Mis Listas ────────────────────────────────── -->
+    <div class="section-header">
+      <ion-icon name="list-outline"></ion-icon>
+      <span>Mis listas</span>
+    </div>
+
+    <div *ngIf="misListas.length === 0" class="empty-container small">
+      <p>Aún no tienes listas. ¡Crea una!</p>
+    </div>
+
+    <div class="listas-grid" *ngIf="misListas.length > 0">
+      <div class="lista-card" *ngFor="let lista of misListas">
+        <div class="card-poster">
+          <img *ngIf="lista.primerPoster" [src]="lista.primerPoster" />
+          <div *ngIf="!lista.primerPoster" class="no-poster">
+            <ion-icon name="film-outline"></ion-icon>
           </div>
-          <ion-card-header>
-            <ion-card-subtitle>{{ lista.titulo }}</ion-card-subtitle>
-            <p class="date-text">{{ lista.created_at | date:'dd/MM/yyyy' }}</p>
-          </ion-card-header>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+          <div class="card-overlay">
+            <p class="card-count">{{ lista.peliculas_ids.length }} {{ lista.peliculas_ids.length === 1 ? 'película' : 'películas' }}</p>
+          </div>
+        </div>
+        <div class="card-info">
+          <p class="card-nombre">{{ lista.nombre }}</p>
+          <p class="card-desc" *ngIf="lista.descripcion">{{ lista.descripcion }}</p>
+          <p class="card-fecha">{{ lista.created_at | date:'dd/MM/yyyy' }}</p>
+        </div>
+        <ion-button fill="clear" class="borrar-btn" (click)="borrarLista(lista.local_id)">
+          <ion-icon name="trash-outline" slot="icon-only" color="danger"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- ── Sección: Listas de Amigos ─────────────────────────── -->
+    <div class="section-header mt-4">
+      <ion-icon name="people-outline"></ion-icon>
+      <span>Listas de amigos</span>
+    </div>
+
+    <div *ngIf="listasAmigos.length === 0" class="empty-container small">
+      <p>Tus amigos aún no tienen listas.</p>
+    </div>
+
+    <div class="listas-grid" *ngIf="listasAmigos.length > 0">
+      <div class="lista-card" *ngFor="let lista of listasAmigos">
+        <div class="card-poster">
+          <img *ngIf="lista.primerPoster" [src]="lista.primerPoster" />
+          <div *ngIf="!lista.primerPoster" class="no-poster">
+            <ion-icon name="film-outline"></ion-icon>
+          </div>
+          <div class="card-overlay">
+            <p class="card-count">{{ lista.peliculas_ids.length }} {{ lista.peliculas_ids.length === 1 ? 'película' : 'películas' }}</p>
+          </div>
+        </div>
+        <div class="card-info">
+          <p class="card-nombre">{{ lista.nombre }}</p>
+          <p class="card-autor" *ngIf="lista.usuario">
+            <ion-icon name="person-outline"></ion-icon>
+            {{ lista.usuario.nombre_user || lista.usuario.nombre }}
+          </p>
+          <p class="card-desc" *ngIf="lista.descripcion">{{ lista.descripcion }}</p>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
 
 </ion-content>
-
 
 <app-footer-nav activo="listas"></app-footer-nav>

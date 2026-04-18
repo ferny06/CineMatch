@@ -6,6 +6,7 @@ import { SyncService } from './services/sync.service';
 // NetworkService detecta cambios de conectividad y dispara sync automáticamente.
 import { NetworkService } from './services/network.service';
 import { SupabaseService } from './services/supabase.service';
+import { PullSyncService } from './services/pull-sync.service';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,7 @@ export class AppComponent implements OnInit {
     private syncService: SyncService,
     private networkService: NetworkService,
     private supabaseService: SupabaseService,
+    private pullSyncService: PullSyncService,
   ) {}
 
   /**
@@ -60,7 +62,10 @@ export class AppComponent implements OnInit {
     const { data: { session } } = await this.supabaseService.supabase.auth.getSession();
     if (session) {
       console.log('[AppComponent] Sesión activa encontrada — redirigiendo a home.');
-      await this.restaurarUsuarioLocalSiVacio(session.user.id);
+      const usuarioId = await this.restaurarUsuarioLocalSiVacio(session.user.id);
+      if (usuarioId) {
+        await this.pullSyncService.pullPreferencias(usuarioId);
+      }
       this.router.navigate(['/home'], { replaceUrl: true });
     }
   }
@@ -70,18 +75,18 @@ export class AppComponent implements OnInit {
    * y lo inserta localmente. Cubre el caso de arranque con sesión persistida
    * pero BD reinicializada (reinstalación sin borrar datos Auth del WebView).
    */
-  private async restaurarUsuarioLocalSiVacio(authUserId: string): Promise<void> {
+  private async restaurarUsuarioLocalSiVacio(authUserId: string): Promise<string | null> {
     try {
       const db = this.databaseService.obtenerConexion();
       const check = await db.query('SELECT id FROM local_usuario LIMIT 1');
       if (check.values && check.values.length > 0) {
-        return; // Ya tiene datos — no hace nada
+        return check.values[0].id as string;
       }
 
       const { data: perfil, error } = await this.supabaseService.getUsuarioPorAuthId(authUserId);
       if (error || !perfil) {
         console.warn('[AppComponent] No se pudo obtener el perfil desde Supabase:', error);
-        return;
+        return null;
       }
 
       const ahora = new Date().toISOString();
@@ -108,8 +113,10 @@ export class AppComponent implements OnInit {
         ]
       );
       console.log('[AppComponent] local_usuario restaurado desde Supabase. id:', perfil.id);
+      return perfil.id as string;
     } catch (err) {
       console.warn('[AppComponent] Error al restaurar local_usuario:', err);
+      return null;
     }
   }
 }

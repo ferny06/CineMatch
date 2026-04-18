@@ -92,20 +92,23 @@ CREATE TABLE IF NOT EXISTS local_conversacion (
 
 -- ─────────────────────────────────────────────────────────────────
 -- Tabla: local_lista
--- Lista personal de películas del usuario (vista, pendiente, favorita).
--- CORRECCIÓN: se incluye fecha_visto que existe en la tabla central.
+-- Colección nombrada de películas creada por el usuario.
+-- Un registro = una lista completa (tipo playlist), con array de tmdb_ids.
+-- ↔ lista_peliculas en Supabase (pelicula_id INTEGER[]).
 -- ─────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS local_lista (
-  local_id    TEXT NOT NULL PRIMARY KEY,             -- UUID generado localmente
-  server_id   TEXT,                                  -- UUID Supabase (null hasta sync)
-  usuario_id  TEXT NOT NULL                          -- FK → local_usuario
+  local_id      TEXT NOT NULL PRIMARY KEY,           -- UUID generado localmente
+  server_id     TEXT,                                -- UUID Supabase (null hasta sync)
+  usuario_id    TEXT NOT NULL                        -- FK → local_usuario
     REFERENCES local_usuario(id) ON DELETE CASCADE,
-  pelicula_id TEXT NOT NULL                          -- FK → local_pelicula
-    REFERENCES local_pelicula(id) ON DELETE CASCADE,
-  estado      TEXT NOT NULL,                         -- 'vista' | 'pendiente' | 'favorita'
-  fecha_visto TEXT,                                  -- ISO 8601, null si no es 'vista'
-  sync_status TEXT NOT NULL DEFAULT 'pending',       -- Estado: pending/synced/error
-  created_at  TEXT NOT NULL                          -- Creación local ISO 8601
+  nombre        TEXT NOT NULL,                       -- Nombre de la lista
+  descripcion   TEXT,                                -- Descripción opcional
+  peliculas_ids TEXT NOT NULL DEFAULT '[]',          -- JSON array de tmdb_ids
+  estado        TEXT NOT NULL DEFAULT 'activa'       -- 'activa' | 'borrada' (soft delete)
+    CHECK(estado IN ('activa','borrada')),
+  sync_status   TEXT NOT NULL DEFAULT 'pending',     -- Estado: pending/synced/error
+  synced_at     TEXT,                                -- Última sync ISO 8601 (null si nunca)
+  created_at    TEXT NOT NULL                        -- Creación local ISO 8601
 );
 
 -- ─────────────────────────────────────────────────────────────────
@@ -200,10 +203,8 @@ CREATE TABLE IF NOT EXISTS local_usuario_genero_preferencia (
 -- Índices — optimizan las consultas más frecuentes de la app
 -- ─────────────────────────────────────────────────────────────────
 
--- Películas en la lista de un usuario específico
+-- Listas de un usuario específico
 CREATE INDEX IF NOT EXISTS idx_lista_usuario   ON local_lista(usuario_id);
--- Usuarios que tienen una película en su lista
-CREATE INDEX IF NOT EXISTS idx_lista_pelicula  ON local_lista(pelicula_id);
 -- Reseñas escritas por un usuario
 CREATE INDEX IF NOT EXISTS idx_resena_usuario  ON local_resena(usuario_id);
 -- Reseñas de una película específica
