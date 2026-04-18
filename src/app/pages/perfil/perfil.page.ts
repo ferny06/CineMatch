@@ -286,10 +286,10 @@ export class PerfilPage implements OnInit {
 
   private async ejecutarLogout() {
     try {
-      
-      console.log('Sesión terminada con éxito');
+      await this.databaseService.limpiarDatosUsuario();
+      await this.supabaseService.supabase.auth.signOut();
       this.router.navigate(['/login'], { replaceUrl: true });
-      
+      console.log('Sesión terminada con éxito');
     } catch (err) {
       console.error('Error al cerrar sesión:', err);
     }

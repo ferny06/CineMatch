@@ -70,9 +70,12 @@ export class LoginPage {
   private async restaurarUsuarioLocalSiVacio(authUserId: string): Promise<void> {
     try {
       const db = this.databaseService.obtenerConexion();
-      const check = await db.query(`SELECT id FROM ${DB_TABLES.USUARIO} LIMIT 1`);
+      const check = await db.query(
+        `SELECT id FROM ${DB_TABLES.USUARIO} WHERE auth_user_id = ? LIMIT 1`,
+        [authUserId]
+      );
       if (check.values && check.values.length > 0) {
-        return; // Ya tiene datos — no hace nada
+        return; // Ya tiene datos para este usuario — no hace nada
       }
 
       const { data: perfil, error: fetchError } = await this.supabaseService.getUsuarioPorAuthId(authUserId);

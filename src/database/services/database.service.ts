@@ -247,6 +247,15 @@ export class DatabaseService {
     return this.db;
   }
 
+  /** Elimina todos los datos del usuario activo de la BD local. */
+  async limpiarDatosUsuario(): Promise<void> {
+    await this.db.run(`DELETE FROM cola_sync`);
+    await this.db.run(`DELETE FROM local_usuario`);
+    // Las tablas relacionadas (local_lista, local_resena, local_mensaje,
+    // local_usuario_genero_preferencia) se limpian por CASCADE automáticamente.
+    console.log('[DatabaseService] Datos de usuario eliminados.');
+  }
+
   /**
    * Agrega una columna a una tabla solo si aún no existe.
    * Usa PRAGMA table_info para evitar lanzar errores nativos visibles en logcat.

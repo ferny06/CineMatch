@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
 import { DatabaseService } from 'src/database/services/database.service';
 import { SupabaseService } from 'src/app/services/supabase.service';
 import { GeolocalizacionService } from 'src/app/services/geolocalizacion.service';
@@ -34,11 +33,17 @@ export class SugerenciasPage implements OnInit {
   listaSugeridos: UsuarioSugerido[] = [];
   cargando = false;
 
+  notificaciones: any[] = [];
+  contadorNoLeidas = 0;
+  popoverAbierto = false;
+  popoverEvent: any = null;
+  conectadosIds = new Set<string>();
+  enviando: { [userId: string]: boolean } = {};
+
   constructor(
     private databaseService: DatabaseService,
     private supabaseService: SupabaseService,
     private geoService: GeolocalizacionService,
-    private alertCtrl: AlertController,
     private pullSync: PullSyncService,
   ) {}
 
@@ -61,7 +66,11 @@ export class SugerenciasPage implements OnInit {
       await Promise.all([
         this.actualizarUbicacionYCargarSugeridos(),
         this.cargarAmigos(),
+        this.cargarNotificaciones(),
+        this.cargarEstadoConexiones(),
       ]);
+
+      this.listaSugeridos = this.listaSugeridos.filter(u => !this.conectadosIds.has(u.id));
     } finally {
       this.cargando = false;
     }
@@ -91,19 +100,26 @@ export class SugerenciasPage implements OnInit {
   private async actualizarUbicacionYCargarSugeridos(): Promise<void> {
     const resultado = await this.geoService.obtenerUbicacion();
 
-    if (!resultado.ok) {
-      await this.mostrarAlertaUbicacion(resultado.motivo);
-      return;
+    let latitud: number;
+    let longitud: number;
+
+    if (resultado.ok) {
+      latitud = resultado.coordenadas.latitud;
+      longitud = resultado.coordenadas.longitud;
+
+      // Actualizar coordenadas en Supabase (fire-and-forget, no bloquea la UI)
+      this.supabaseService.actualizarUbicacionUsuario(
+        this.usuarioActual.id,
+        latitud,
+        longitud
+      );
+    } else {
+      // Sin GPS: usar las coordenadas guardadas en Supabase
+      const guardadas = await this.supabaseService.obtenerCoordenadasGuardadas(this.usuarioActual.id);
+      if (guardadas.latitud == null || guardadas.longitud == null) return;
+      latitud = guardadas.latitud;
+      longitud = guardadas.longitud;
     }
-
-    const { latitud, longitud } = resultado.coordenadas;
-
-    // Actualizar coordenadas en Supabase (fire-and-forget, no bloquea la UI)
-    this.supabaseService.actualizarUbicacionUsuario(
-      this.usuarioActual.id,
-      latitud,
-      longitud
-    );
 
     // Obtener preferencias locales del usuario actual
     const misPrefs = await this.obtenerMisPreferencias();
@@ -157,6 +173,61 @@ export class SugerenciasPage implements OnInit {
     this.listaAmigos = data ?? [];
   }
 
+  // ─── Notificaciones y conexiones ─────────────────────────────────────────
+
+  private async cargarNotificaciones(): Promise<void> {
+    const { data } = await this.supabaseService.obtenerNotificacionesNoLeidas(this.usuarioActual.id);
+    this.notificaciones = data ?? [];
+    this.contadorNoLeidas = this.notificaciones.length;
+  }
+
+  private async cargarEstadoConexiones(): Promise<void> {
+    const { data } = await this.supabaseService.obtenerEstadoConexiones(this.usuarioActual.id);
+    this.conectadosIds.clear();
+    for (const c of (data ?? [])) {
+      const otherId = c.solicitante_id === this.usuarioActual.id
+        ? c.destinatario_id : c.solicitante_id;
+      this.conectadosIds.add(otherId);
+    }
+  }
+
+  async enviarSolicitud(sugerido: UsuarioSugerido): Promise<void> {
+    if (this.enviando[sugerido.id] || this.conectadosIds.has(sugerido.id)) return;
+    this.enviando[sugerido.id] = true;
+    const { error } = await this.supabaseService.enviarSolicitudAmistad(
+      this.usuarioActual.id,
+      this.usuarioActual.nombre,
+      sugerido.id
+    );
+    if (error) {
+      console.warn('[SugerenciasPage] Error al enviar solicitud:', error);
+      this.enviando[sugerido.id] = false;
+      return;
+    }
+    this.conectadosIds.add(sugerido.id);
+  }
+
+  abrirPopover(event: Event): void {
+    this.popoverEvent = event;
+    this.popoverAbierto = true;
+  }
+
+  cerrarPopover(): void {
+    this.popoverAbierto = false;
+    this.popoverEvent = null;
+  }
+
+  async responderSolicitud(notif: any, aceptar: boolean): Promise<void> {
+    const { error } = await this.supabaseService.responderSolicitudAmistad(
+      notif.referencia_id, notif.id, aceptar
+    );
+    if (!error) {
+      this.notificaciones = this.notificaciones.filter((n: any) => n.id !== notif.id);
+      this.contadorNoLeidas = this.notificaciones.length;
+      if (aceptar) await this.cargarAmigos();
+    }
+  }
+
   // ─── Preferencias locales del usuario actual ──────────────────────────────
 
   private async obtenerMisPreferencias(): Promise<Map<number, number>> {
@@ -173,39 +244,6 @@ export class SugerenciasPage implements OnInit {
       mapa.set(row['tmdb_genero_id'], row['peso_pref']);
     }
     return mapa;
-  }
-
-  // ─── Alertas de ubicación ─────────────────────────────────────────────────
-
-  private async mostrarAlertaUbicacion(motivo: 'gps_apagado' | 'permiso_denegado' | 'error'): Promise<void> {
-    // gps_apagado es manejado con diálogo nativo por GeolocalizacionService.
-    // Solo se llega aquí si el usuario rechazó ese diálogo o por otros errores.
-    const configs: Record<string, any> = {
-      gps_apagado: {
-        header: 'GPS desactivado',
-        message: 'Activa el GPS en Ajustes → Ubicación para ver personas cerca de ti.',
-        buttons: [
-          { text: 'Cancelar', role: 'cancel' },
-          { text: 'Ir a Ajustes', handler: () => { window.open('app-settings:', '_system'); } },
-        ],
-      },
-      permiso_denegado: {
-        header: 'Permiso denegado',
-        message: 'CineMatch necesita acceso a tu ubicación para mostrarte personas cercanas. Actívalo en los ajustes de la app.',
-        buttons: [
-          { text: 'Cancelar', role: 'cancel' },
-          { text: 'Ir a Ajustes', handler: () => { window.open('app-settings:', '_system'); } },
-        ],
-      },
-      error: {
-        header: 'Sin ubicación',
-        message: 'No pudimos obtener tu ubicación. Comprueba que el GPS esté activo e inténtalo de nuevo.',
-        buttons: [{ text: 'Aceptar', role: 'cancel' }],
-      },
-    };
-
-    const alert = await this.alertCtrl.create(configs[motivo]);
-    await alert.present();
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────

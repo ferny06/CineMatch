@@ -148,3 +148,55 @@ ion-toolbar {
   border-color: rgba(255, 255, 255, 0.1);
   margin: 15px 16px;
 }
+
+// notificaciones
+.btn-notif {
+  position: relative;
+  color: #ffffff;
+
+  .notif-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 0.6rem;
+    min-width: 16px;
+    min-height: 16px;
+    padding: 2px 4px;
+    border-radius: 8px;
+    pointer-events: none;
+  }
+}
+
+.notif-list {
+  background: #1A2131;
+  min-width: 280px;
+
+  ion-list-header {
+    --background: #1A2131;
+  }
+
+  .notif-empty-text {
+    color: #8e94a0;
+    font-size: 0.85rem;
+  }
+}
+
+.notif-item {
+  --background: #1A2131;
+  --border-color: #2A3141;
+
+  ion-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  h3 {
+    color: #fff;
+    font-size: 0.9rem;
+  }
+
+  p {
+    color: #8e94a0;
+    font-size: 0.78rem;
+  }
+}

@@ -4,6 +4,14 @@
       <ion-back-button defaultHref="/home" text=""></ion-back-button>
     </ion-buttons>
     <ion-title>CineMatch Connect</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="abrirPopover($event)" class="btn-notif">
+        <ion-icon name="notifications-outline"></ion-icon>
+        <ion-badge *ngIf="contadorNoLeidas > 0" color="danger" class="notif-badge">
+          {{ contadorNoLeidas }}
+        </ion-badge>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -52,8 +60,13 @@
             <p class="distancia-text">A {{ sugerido.distancia }} km de ti</p>
           </ion-label>
 
-          <ion-button fill="clear" slot="end" class="btn-add">
-            <ion-icon name="person-add-outline"></ion-icon>
+          <ion-button fill="clear" slot="end" class="btn-add"
+            (click)="enviarSolicitud(sugerido)"
+            [disabled]="conectadosIds.has(sugerido.id) || !!enviando[sugerido.id]">
+            <ion-icon
+              [name]="conectadosIds.has(sugerido.id) ? 'checkmark-circle-outline' : 'person-add-outline'"
+              [style.color]="conectadosIds.has(sugerido.id) ? '#4CAF50' : ''">
+            </ion-icon>
           </ion-button>
         </ion-item>
 
@@ -71,6 +84,41 @@
     </div>
 
   </div>
+
+  <ion-popover
+    [isOpen]="popoverAbierto"
+    [event]="popoverEvent"
+    (didDismiss)="cerrarPopover()"
+    alignment="end"
+    side="bottom">
+    <ng-template>
+      <ion-list lines="full" class="notif-list">
+        <ion-list-header>
+          <ion-label class="text-warning fw-bold">Solicitudes pendientes</ion-label>
+        </ion-list-header>
+        <div *ngIf="notificaciones.length === 0" class="ion-text-center ion-padding">
+          <p class="notif-empty-text">Sin notificaciones</p>
+        </div>
+        <ion-item *ngFor="let notif of notificaciones" class="notif-item">
+          <ion-avatar slot="start">
+            <img [src]="notif.remitente?.avatar_url || 'assets/icon/perfil_default.png'">
+          </ion-avatar>
+          <ion-label>
+            <h3>{{ notif.remitente?.nombre_user || notif.titulo || 'Usuario' }}</h3>
+            <p>Quiere conectar contigo</p>
+          </ion-label>
+          <ion-buttons slot="end">
+            <ion-button color="success" fill="clear" (click)="responderSolicitud(notif, true)">
+              <ion-icon name="checkmark-outline"></ion-icon>
+            </ion-button>
+            <ion-button color="danger" fill="clear" (click)="responderSolicitud(notif, false)">
+              <ion-icon name="close-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
 </ion-content>
 
 <app-footer-nav activo="amigos"></app-footer-nav>

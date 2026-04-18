@@ -764,8 +764,8 @@ export class SupabaseService {
       .select(`
         solicitante_id,
         destinatario_id,
-        solicitante:usuario!conexion_solicitante_id_fkey ( id, nombre_user, nombre, avatar_url ),
-        destinatario:usuario!conexion_destinatario_id_fkey ( id, nombre_user, nombre, avatar_url )
+        solicitante:usuario!conexion_solicitante_fk ( id, nombre_user, nombre, avatar_url ),
+        destinatario:usuario!conexion_destinatario_fk ( id, nombre_user, nombre, avatar_url )
       `)
       .eq('estado', 'aceptada')
       .or(`solicitante_id.eq.${usuarioId},destinatario_id.eq.${usuarioId}`);
@@ -786,6 +786,89 @@ export class SupabaseService {
     });
 
     return { data: amigos, error: null };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // CONEXIÓN / SOLICITUDES DE AMISTAD / NOTIFICACIONES
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  async enviarSolicitudAmistad(
+    solicitanteId: string,
+    solicitanteNombre: string,
+    destinatarioId: string
+  ): Promise<SupabaseResult<string>> {
+    const { data: conexData, error: conexError } = await this.supabase
+      .from('conexion')
+      .insert({ solicitante_id: solicitanteId, destinatario_id: destinatarioId, estado: 'pendiente' })
+      .select('id')
+      .single();
+    if (conexError) return { data: null, error: conexError.message };
+
+    const { error: notifError } = await this.supabase
+      .from('notificacion')
+      .insert({
+        usuario_id:    destinatarioId,
+        remitente_id:  solicitanteId,
+        referencia_id: conexData.id,
+        tipo:          'solicitud_amistad',
+        titulo:        solicitanteNombre,
+        leida:         'N',
+      });
+    if (notifError) console.warn('[SupabaseService] Notificación no creada:', notifError.message);
+
+    return { data: conexData.id, error: null };
+  }
+
+  async obtenerNotificacionesNoLeidas(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('notificacion')
+      .select(`
+        id, referencia_id, fecha_creacion,
+        remitente:usuario!notificacion_remitente_id_fkey ( id, nombre_user, avatar_url )
+      `)
+      .eq('usuario_id', usuarioId)
+      .eq('leida', 'N')
+      .eq('tipo', 'solicitud_amistad')
+      .order('fecha_creacion', { ascending: false });
+
+    if (error) return { data: null, error: error.message };
+    return { data: data ?? [], error: null };
+  }
+
+  async responderSolicitudAmistad(
+    conexionId: string,
+    notificacionId: string,
+    aceptar: boolean
+  ): Promise<SupabaseResult> {
+    const { error: conexError } = await this.supabase
+      .from('conexion')
+      .update({ estado: aceptar ? 'aceptada' : 'rechazada' })
+      .eq('id', conexionId);
+    if (conexError) return { data: null, error: conexError.message };
+
+    const { error: notifError } = await this.supabase
+      .from('notificacion')
+      .update({ leida: 'S' })
+      .eq('id', notificacionId);
+    return { data: null, error: notifError?.message ?? null };
+  }
+
+  async obtenerCoordenadasGuardadas(usuarioId: string): Promise<{ latitud: number | null; longitud: number | null }> {
+    const { data } = await this.supabase
+      .from('usuario')
+      .select('latitud, longitud')
+      .eq('id', usuarioId)
+      .single();
+    return { latitud: data?.latitud ?? null, longitud: data?.longitud ?? null };
+  }
+
+  async obtenerEstadoConexiones(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('conexion')
+      .select('solicitante_id, destinatario_id, estado')
+      .or(`solicitante_id.eq.${usuarioId},destinatario_id.eq.${usuarioId}`)
+      .in('estado', ['pendiente', 'aceptada']);
+    return { data: data ?? null, error: error?.message ?? null };
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
