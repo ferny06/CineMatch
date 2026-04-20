@@ -78,10 +78,14 @@
       </ion-card>
     </div>
 
-    <div *ngIf="listaSugeridos.length === 0" class="ion-text-center mt-5 px-4">
-      <ion-icon name="people-outline" style="font-size: 4rem; color: #2A3141;"></ion-icon>
-      <p class="text-muted">No encontramos cinéfilos en tu radio actual. ¡Prueba aumentando tu radio de conexión!</p>
-    </div>
+<div *ngIf="listaSugeridos.length === 0" class="empty-suggestions-container ion-text-center">
+  <ion-icon name="people-outline"></ion-icon>
+  <p class="text-muted">
+    No encontramos cinéfilos en tu radio actual. 
+    <br>
+    <strong>¡Prueba aumentando tu radio de conexión!</strong>
+  </p>
+</div>
 
   </div>
 
