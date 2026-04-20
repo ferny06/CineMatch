@@ -19,6 +19,15 @@
       </ion-card-header>
 
       <ion-card-content>
+
+        <div class="disclaimer-container">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <p>
+            Al publicar, aceptas nuestras <strong>Normas de Comunidad</strong>: 
+            prohibido el lenguaje de odio, racismo o insultos. Las reseñas ofensivas serán eliminadas.
+          </p>
+        </div>
+        
         <div class="stars-row ion-text-center">
           <ion-icon *ngFor="let s of [1,2,3,4,5]" 
                     [name]="resena.calificacion >= s ? 'star' : 'star-outline'"
