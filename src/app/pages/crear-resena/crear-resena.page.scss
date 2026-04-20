@@ -45,10 +45,16 @@ ion-card-title {
 }
 
 .spoiler-item {
-  --background: #11151e;
+--background: #11151e;
   --border-radius: 10px;
-  margin-bottom: 35px; // espacio antes de btn
+  margin-bottom: 35px;
 }
+
+ion-label {
+    color: white !important; 
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
 
 .main-btn {
   --border-radius: 12px;

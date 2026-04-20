@@ -7,6 +7,31 @@ ion-content {
   flex-direction: column;
   align-items: center;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 15px; // pone un espacio antes de linea
+
+  h2.text-white {
+    color: #ffffff !important; 
+    font-weight: 800;
+    margin-top: 10px;
+    font-size: 1.5rem;
+  }
+
+  .text-muted {
+    color: #cbd5e1 !important; 
+    font-size: 0.95rem;
+    text-align: center;
+    padding: 0 20px;
+  }
+
+  .section-title {
+  color: #ffffff !important; 
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-top: 20px;
+  margin-bottom: 15px;
+  border-left: 3px solid #FFD700; 
+  padding-left: 10px;
+}
 
   .main-avatar {
     width: 90px;
@@ -14,6 +39,17 @@ ion-content {
     margin-bottom: 10px;
     border: 2px solid #FFD700;
   }
+}
+
+.section-title {
+  color: #ffffff !important; 
+  font-size: 1.2rem; 
+  font-weight: bold;
+  margin-top: 25px;
+  margin-bottom: 15px;
+  border-left: 4px solid #FFD700; 
+  padding-left: 12px;
+  display: block; 
 }
 
 .tags-container {
@@ -29,11 +65,7 @@ ion-content {
   width: 100%;
 }
 
-.section-title {
-  font-size: 1rem;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
+
 
 .empty-resenas {
   display: flex;
@@ -64,6 +96,7 @@ ion-content {
 
   ion-card-header {
     padding: 10px 8px;
+    color: #ffffff !important;
     ion-card-subtitle { color: #ffffff !important; font-weight: 700; font-size: 0.85rem; }
   }
 }
@@ -79,6 +112,7 @@ ion-content {
 
 .comentario-text {
   font-size: 0.8rem;
+  color: #e2e8f0 !important;
   color: #c8d3e0;
   font-style: italic;
   padding-top: 0;
