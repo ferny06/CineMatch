@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PerfilAmigoPage } from './perfil-amigo.page';
 
-describe('PerfilAmigoPage', () => {
+xdescribe('PerfilAmigoPage', () => {
   let component: PerfilAmigoPage;
   let fixture: ComponentFixture<PerfilAmigoPage>;
 

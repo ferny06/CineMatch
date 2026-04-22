@@ -5,13 +5,22 @@
     </ion-buttons>
     <ion-title>Nueva Lista</ion-title>
     <ion-buttons slot="end">
-      <ion-button [disabled]="!puedeGuardar || guardando" (click)="guardarLista()" color="primary">
+      <ion-button [disabled]="!puedeGuardar || guardando" (click)="guardarLista()" class="header-button">
         <ion-spinner *ngIf="guardando" name="crescent" slot="icon-only"></ion-spinner>
         <span *ngIf="!guardando">Guardar</span>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
+
+<div class="validation-hints" *ngIf="!puedeGuardar && !buscando">
+  <p *ngIf="nombre.trim().length === 0" class="hint-error">
+    <ion-icon name="alert-circle-outline"></ion-icon> Falta el nombre de la lista
+  </p>
+  <p *ngIf="peliculasAgregadas.length === 0" class="hint-error">
+    <ion-icon name="alert-circle-outline"></ion-icon> Debes agregar al menos una película
+  </p>
+</div>
 
 <ion-content>
 
