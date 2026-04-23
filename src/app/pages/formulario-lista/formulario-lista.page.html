@@ -13,7 +13,11 @@
   </ion-toolbar>
 </ion-header>
 
-<div class="validation-hints" *ngIf="!puedeGuardar && !buscando">
+
+
+<ion-content>
+
+  <div class="validation-hints" *ngIf="intentoGuardar && !puedeGuardar">
   <p *ngIf="nombre.trim().length === 0" class="hint-error">
     <ion-icon name="alert-circle-outline"></ion-icon> Falta el nombre de la lista
   </p>
@@ -21,8 +25,6 @@
     <ion-icon name="alert-circle-outline"></ion-icon> Debes agregar al menos una película
   </p>
 </div>
-
-<ion-content>
 
   <!-- Datos de la lista -->
   <div class="form-section">

@@ -76,3 +76,27 @@ ion-item-options {
     color: white;
   }
 }
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  margin-top: 50px;
+
+  ion-icon {
+    font-size: 4rem;
+    color: #ffffff; 
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  p {
+    color: #ffffff !important; 
+    font-size: 1.1rem;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+}
