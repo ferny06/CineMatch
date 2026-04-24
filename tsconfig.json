@@ -32,8 +32,7 @@
     "strictTemplates": true
   },
   "exclude": [
-    "src/**/*.spec.ts",
-    "src/test.ts",
+    
     "node_modules"
   ]
 }

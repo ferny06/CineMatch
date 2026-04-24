@@ -37,7 +37,7 @@ ion-toolbar {
 }
 
 .section-label {
-  color: #8899ac;
+  color: #ffffff;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -150,4 +150,71 @@ ion-searchbar.custom-search {
   color: #8899ac;
   padding: 24px 0;
   font-size: 0.9rem;
+}
+
+.header-button {
+  --color: #FFD700; 
+  font-weight: bold;
+  text-transform: uppercase;
+  
+  
+  color: #FFD700 !important; 
+}
+
+/* Estilo para los errores  */
+.validation-hints {
+  padding: 16px 16px 0 16px; 
+  
+  .hint-error {
+    background: rgba(231, 76, 60, 0.1); 
+    color: #e74c3c;
+    margin: 4px 0;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+
+    ion-icon {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+/* Mejora para el botón de guardar */
+.header-button {
+  &[disabled] {
+    --color: #e8d36b !important; // cuando no se puede guardar
+    opacity: 0.6;
+  }
+}
+
+
+.input-item.ion-valid, 
+.input-item.ion-touched {
+  --highlight-color: #4A90E2 !important; 
+  --highlight-color-focused: #FFD700 !important;
+}
+
+
+.input-item {
+  ion-label, 
+  .label-text,
+  .input-wrapper {
+    color: #ffffff !important;
+    --color: #ffffff !important;
+  }
+}
+
+/*  para el texto dentro del input y el textarea */
+ion-input, ion-textarea {
+  --color: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* para quitar el verde */
+.ion-valid.item-has-placeholder,
+.ion-valid.ion-touched {
+  --ion-color-success: #ffffff !important;
 }

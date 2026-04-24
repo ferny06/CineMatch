@@ -16,6 +16,7 @@ export class FormularioListaPage implements OnInit {
 
   nombre = '';
   descripcion = '';
+  intentoGuardar = false;
 
   peliculasAgregadas: any[] = [];
   resultadosBusqueda: any[] = [];
@@ -76,6 +77,9 @@ export class FormularioListaPage implements OnInit {
   }
 
   async guardarLista() {
+    this.intentoGuardar = true;
+
+  
     if (!this.puedeGuardar || this.guardando) return;
     this.guardando = true;
     try {
