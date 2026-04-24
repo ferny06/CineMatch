@@ -31,6 +31,7 @@ import { LocalLista } from '../../database/models/local-lista.model';
 import { LocalResena } from '../../database/models/local-resena.model';
 import { LocalMensaje } from '../../database/models/local-mensaje.model';
 import { LocalUsuarioGeneroPreferencia } from '../../database/models/local-usuario-genero-preferencia.model';
+import { LocalPeliculaVista } from '../../database/models/local-pelicula-vista.model';
 
 // ─── Tipos de retorno de los métodos de Supabase ─────────────────────────────
 
@@ -876,6 +877,46 @@ export class SupabaseService {
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
+  // PELÍCULAS VISTAS
+  // ══════════════════════════════════════════════════════════════════════════════
+
+  async insertPeliculaVista(vista: LocalPeliculaVista): Promise<SupabaseResult<string>> {
+    const { data, error } = await this.supabase
+      .from('pelicula_vista')
+      .upsert(
+        { usuario_id: vista.usuario_id, pelicula_id: vista.pelicula_id, fecha_vista: vista.fecha_vista },
+        { onConflict: 'usuario_id,pelicula_id' }
+      )
+      .select('id')
+      .single();
+    return { data: data?.id ?? null, error: error?.message ?? null };
+  }
+
+  async pullPeliculasVistas(usuarioId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('pelicula_vista')
+      .select(`id, fecha_vista, pelicula ( id, tmdb_id, titulo, poster_url, pelicula_genero ( genero ( nombre ) ) )`)
+      .eq('usuario_id', usuarioId);
+    return { data: data ?? null, error: error?.message ?? null };
+  }
+
+  async obtenerPeliculasVistasAmigo(amigoId: string): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('pelicula_vista')
+      .select(`fecha_vista, pelicula ( tmdb_id, titulo, poster_url )`)
+      .eq('usuario_id', amigoId)
+      .order('fecha_vista', { ascending: false });
+    if (error) return { data: null, error: error.message };
+    const vistas = (data ?? []).map((row: any) => ({
+      tmdb_id:    row.pelicula?.tmdb_id ?? 0,
+      titulo:     row.pelicula?.titulo ?? '',
+      poster_url: row.pelicula?.poster_url ?? null,
+      fecha_vista: row.fecha_vista,
+    }));
+    return { data: vistas, error: null };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
   // UTILIDADES INTERNAS
   // ══════════════════════════════════════════════════════════════════════════════
 
@@ -1052,6 +1093,25 @@ export class SupabaseService {
     });
 
     return { data: conversaciones, error: null };
+  }
+
+  async triggerActualizarRanking(): Promise<void> {
+    try {
+      await this.supabase.rpc('actualizar_ranking_pelicula');
+    } catch (err) {
+      console.warn('[SupabaseService] triggerActualizarRanking falló (no crítico):', err);
+    }
+  }
+
+  async pullRankingPeliculas(): Promise<SupabaseResult<any[]>> {
+    const { data, error } = await this.supabase
+      .from('ranking_pelicula')
+      .select('id, pelicula_id, tmdb_id, titulo, poster_url, posicion, promedio_calificacion, total_resenas')
+      .order('posicion', { ascending: true })
+      .limit(20);
+
+    if (error) return { data: null, error: error.message };
+    return { data: data ?? [], error: null };
   }
 
   async contarMensajesNoLeidos(usuarioId: string): Promise<number> {

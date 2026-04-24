@@ -14,8 +14,9 @@
  *    local_pelicula → pelicula + genero + pelicula_genero
  *
  *  Tier 2 — Dependen de Tier 1:
- *    local_lista    → lista_peliculas   (requiere: usuario + pelicula)
- *    local_resena   → resena            (requiere: usuario + pelicula)
+ *    local_lista          → lista_peliculas   (requiere: usuario + pelicula)
+ *    local_resena         → resena            (requiere: usuario + pelicula)
+ *    local_pelicula_vista → pelicula_vista    (requiere: usuario + pelicula)
  *
  *  Tier 3 — Depende de conversacion en Supabase (servidor):
  *    local_mensaje  → mensaje           (requiere: conversacion + usuario)
@@ -69,6 +70,7 @@ import { LocalLista } from '../../database/models/local-lista.model';
 import { LocalResena } from '../../database/models/local-resena.model';
 import { LocalMensaje } from '../../database/models/local-mensaje.model';
 import { LocalUsuarioGeneroPreferencia } from '../../database/models/local-usuario-genero-preferencia.model';
+import { LocalPeliculaVista } from '../../database/models/local-pelicula-vista.model';
 
 // ─── Constantes de control ────────────────────────────────────────────────────
 
@@ -80,18 +82,20 @@ const MAX_REINTENTOS = 3;
  * El índice más bajo se procesa primero, garantizando que las FK ya existan
  * en Supabase cuando se inserta un registro dependiente.
  *
- * Tier 1: usuario, pelicula   (sin FK hacia otras tablas sincronizables)
- * Tier 2: lista, resena,      (FK hacia usuario + pelicula)
- *         pref_genero         (FK hacia usuario; tmdb_genero_id no es FK real)
- * Tier 3: mensaje             (FK hacia conversacion + usuario)
+ * Tier 1: usuario, pelicula        (sin FK hacia otras tablas sincronizables)
+ * Tier 2: lista, resena,           (FK hacia usuario + pelicula)
+ *         pref_genero,             (FK hacia usuario; tmdb_genero_id no es FK real)
+ *         pelicula_vista           (FK hacia usuario + pelicula)
+ * Tier 3: mensaje                  (FK hacia conversacion + usuario)
  */
 const ORDEN_SYNC: string[] = [
-  DB_TABLES.USUARIO,      // Tier 1 — sin dependencias
-  DB_TABLES.PELICULA,     // Tier 1 — sin dependencias
-  DB_TABLES.LISTA,        // Tier 2 — depende de usuario + pelicula
-  DB_TABLES.RESENA,       // Tier 2 — depende de usuario + pelicula
-  DB_TABLES.PREF_GENERO,  // Tier 2 — depende de usuario (FK); tmdb_genero_id es solo un entero
-  DB_TABLES.MENSAJE,      // Tier 3 — depende de conversacion + usuario
+  DB_TABLES.USUARIO,        // Tier 1 — sin dependencias
+  DB_TABLES.PELICULA,       // Tier 1 — sin dependencias
+  DB_TABLES.LISTA,          // Tier 2 — depende de usuario + pelicula
+  DB_TABLES.RESENA,         // Tier 2 — depende de usuario + pelicula
+  DB_TABLES.PREF_GENERO,    // Tier 2 — depende de usuario (FK); tmdb_genero_id es solo un entero
+  DB_TABLES.PELICULA_VISTA, // Tier 2 — depende de usuario + pelicula
+  DB_TABLES.MENSAJE,        // Tier 3 — depende de conversacion + usuario
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -240,6 +244,9 @@ export class SyncService {
         case DB_TABLES.PREF_GENERO:
           await this.sincronizarPreferenciaGenero(item);
           break;
+        case DB_TABLES.PELICULA_VISTA:
+          await this.sincronizarPeliculaVista(item);
+          break;
         case DB_TABLES.MENSAJE:
           await this.sincronizarMensaje(item);
           break;
@@ -350,13 +357,17 @@ export class SyncService {
         [serverId, new Date().toISOString(), localId]
       );
 
-      // Cascadear el nuevo UUID a local_resena y local_lista
+      // Cascadear el nuevo UUID a local_resena (FK directa) y local_lista (JSON array)
       await db.run(
         `UPDATE ${DB_TABLES.RESENA} SET pelicula_id = ? WHERE pelicula_id = ?`,
         [serverId, localId]
       );
       await db.run(
-        `UPDATE ${DB_TABLES.LISTA} SET pelicula_id = ? WHERE pelicula_id = ?`,
+        `UPDATE ${DB_TABLES.LISTA} SET peliculas_ids = REPLACE(peliculas_ids, ?, ?) WHERE peliculas_ids LIKE ?`,
+        [localId, serverId, `%${localId}%`]
+      );
+      await db.run(
+        `UPDATE ${DB_TABLES.PELICULA_VISTA} SET pelicula_id = ? WHERE pelicula_id = ?`,
         [serverId, localId]
       );
 
@@ -516,6 +527,9 @@ export class SyncService {
 
     await this.marcarCompletado(item.id!);
     console.log(`[SyncService] ✓ Reseña ${item.registro_id} (${item.operacion}) sincronizada.`);
+
+    // Actualizar ranking global tras cualquier cambio en reseñas (fire-and-forget)
+    this.supabaseService.triggerActualizarRanking().catch(() => {});
   }
 
   /**
@@ -626,6 +640,36 @@ export class SyncService {
 
     await this.marcarCompletado(item.id!);
     console.log(`[SyncService] ✓ Mensaje ${item.registro_id} (${item.operacion}) sincronizado.`);
+  }
+
+  private async sincronizarPeliculaVista(item: ColaSync): Promise<void> {
+    const db = this.databaseService.obtenerConexion();
+
+    const resultado = await db.query(
+      `SELECT * FROM ${DB_TABLES.PELICULA_VISTA} WHERE local_id = ?`,
+      [item.registro_id]
+    );
+
+    const vista: LocalPeliculaVista | undefined = resultado.values?.[0];
+
+    if (!vista) {
+      console.warn(`[SyncService] PeliculaVista ${item.registro_id} no encontrada en local. Ignorando.`);
+      await this.marcarCompletado(item.id!);
+      return;
+    }
+
+    if (item.operacion === SYNC_OPERACION.INSERT) {
+      const { data: serverId, error } = await this.supabaseService.insertPeliculaVista(vista);
+
+      if (error || !serverId) {
+        throw new Error(`insertPeliculaVista falló: ${error}`);
+      }
+
+      await this.actualizarServerId(DB_TABLES.PELICULA_VISTA, 'local_id', item.registro_id, serverId);
+    }
+
+    await this.marcarCompletado(item.id!);
+    console.log(`[SyncService] ✓ PeliculaVista ${item.registro_id} sincronizada.`);
   }
 
   // ══════════════════════════════════════════════════════════════════════════════

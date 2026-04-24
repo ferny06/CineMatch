@@ -17,32 +17,37 @@ export const DB_NAME = 'cinematch_local';
  *          Ambas son NOT NULL en Supabase y se recopilan durante el registro.
  * v2 → v3: Se agrega columna `auth_user_id` a `local_usuario`.
  *          Es el UUID de Supabase Auth, NOT NULL en la tabla central `usuario`.
+ * v3 → v4: Se agrega tabla `local_pelicula_vista` para registrar películas vistas.
  *
  * Nota: la tabla `local_usuario_genero_preferencia` se agregó sin bump de versión
  * porque usa CREATE TABLE IF NOT EXISTS (idempotente) y el proyecto no registra
  * addUpgradeStatement. Subir DB_VERSION sin upgrade statements provoca que
  * @capacitor-community/sqlite llame a onUpgrade vacío, lo que puede destruir datos.
  */
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 /** Nombres de las tablas de la base de datos local */
 export const DB_TABLES = {
   /** Caché del perfil del usuario autenticado */
-  USUARIO:      'local_usuario',
+  USUARIO:        'local_usuario',
   /** Caché de películas consultadas */
-  PELICULA:     'local_pelicula',
+  PELICULA:       'local_pelicula',
   /** Tabla mínima de conversaciones para integridad referencial */
-  CONVERSACION: 'local_conversacion',
+  CONVERSACION:   'local_conversacion',
   /** Lista personal de películas del usuario */
-  LISTA:        'local_lista',
+  LISTA:          'local_lista',
   /** Reseñas escritas offline por el usuario */
-  RESENA:       'local_resena',
+  RESENA:         'local_resena',
   /** Mensajes intercambiados en conversaciones */
-  MENSAJE:      'local_mensaje',
+  MENSAJE:        'local_mensaje',
   /** Cola de operaciones pendientes de sincronizar con Supabase */
-  COLA_SYNC:    'cola_sync',
+  COLA_SYNC:      'cola_sync',
   /** Preferencias de género del usuario, calculadas por media ponderada en cada reseña */
-  PREF_GENERO:  'local_usuario_genero_preferencia',
+  PREF_GENERO:    'local_usuario_genero_preferencia',
+  /** Historial de películas marcadas como vistas por el usuario */
+  PELICULA_VISTA: 'local_pelicula_vista',
+  /** Ranking global de películas calculado a partir de reseñas de todos los usuarios */
+  RANKING_PELICULA: 'local_ranking_pelicula',
 } as const;
 
 /**

@@ -117,3 +117,23 @@ ion-content {
   font-style: italic;
   padding-top: 0;
 }
+
+.movie-card-resena {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+  cursor: pointer;
+
+  .figma-poster {
+    width: 110px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .stars-mini {
+    margin-top: 6px;
+  }
+}

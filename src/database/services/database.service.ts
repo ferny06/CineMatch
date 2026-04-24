@@ -214,6 +214,39 @@ export class DatabaseService {
         );`,
         values: [],
       },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_pelicula_vista (
+          local_id         TEXT NOT NULL PRIMARY KEY,
+          server_id        TEXT,
+          usuario_id       TEXT NOT NULL REFERENCES local_usuario(id) ON DELETE CASCADE,
+          pelicula_id      TEXT NOT NULL REFERENCES local_pelicula(id) ON DELETE CASCADE,
+          tmdb_id          INTEGER NOT NULL,
+          titulo           TEXT NOT NULL,
+          poster_url       TEXT,
+          genero_principal TEXT,
+          fecha_vista      TEXT NOT NULL,
+          sync_status      TEXT NOT NULL DEFAULT 'pending',
+          synced_at        TEXT,
+          UNIQUE(usuario_id, tmdb_id)
+        );`,
+        values: [],
+      },
+      {
+        statement: `CREATE TABLE IF NOT EXISTS local_ranking_pelicula (
+          id                    TEXT    NOT NULL PRIMARY KEY,
+          pelicula_id           TEXT    NOT NULL UNIQUE,
+          tmdb_id               INTEGER NOT NULL,
+          titulo                TEXT    NOT NULL,
+          poster_url            TEXT,
+          posicion              INTEGER NOT NULL,
+          promedio_calificacion REAL,
+          total_resenas         INTEGER NOT NULL DEFAULT 0,
+          synced_at             TEXT
+        );`,
+        values: [],
+      },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_vista_usuario ON local_pelicula_vista(usuario_id);`, values: [] },
+      { statement: `CREATE INDEX IF NOT EXISTS idx_vista_tmdb    ON local_pelicula_vista(tmdb_id);`,    values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_lista_usuario   ON local_lista(usuario_id);`,   values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_resena_usuario  ON local_resena(usuario_id);`,  values: [] },
       { statement: `CREATE INDEX IF NOT EXISTS idx_resena_pelicula ON local_resena(pelicula_id);`, values: [] },
@@ -225,9 +258,10 @@ export class DatabaseService {
     ], false);
 
     // Migración incremental: agrega columnas si aún no existen.
-    await this.agregarColumnaSiFalta('local_pelicula', 'idioma_original', 'TEXT');
-    await this.agregarColumnaSiFalta('local_resena',   'synced_at',       'TEXT');
-    await this.agregarColumnaSiFalta('local_lista',    'synced_at',       'TEXT');
+    await this.agregarColumnaSiFalta('local_pelicula',        'idioma_original', 'TEXT');
+    await this.agregarColumnaSiFalta('local_resena',          'synced_at',       'TEXT');
+    await this.agregarColumnaSiFalta('local_lista',           'synced_at',       'TEXT');
+    await this.agregarColumnaSiFalta('local_ranking_pelicula','pelicula_id',     'TEXT');
 
     // Migración de local_lista: el esquema anterior usaba pelicula_id (FK individual).
     // Si se detecta el esquema viejo, se descarta y recrea con el nuevo diseño.

@@ -27,6 +27,10 @@ export class PeliculaPage implements OnInit {
     generos_json: ''
   };
 
+  yaVista = false;
+  private usuarioId = '';
+  private vistaLocalId: string | null = null;
+
   constructor(
     private route: ActivatedRoute,
     private movieService: MovieService,
@@ -36,6 +40,12 @@ export class PeliculaPage implements OnInit {
   ) { }
 
   async ngOnInit() {
+    const db = this.databaseService.obtenerConexion();
+    const userRes = await db.query('SELECT id FROM local_usuario LIMIT 1');
+    if (userRes.values?.length) {
+      this.usuarioId = userRes.values[0].id;
+    }
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       await this.cargarDetallesPelicula(id);
@@ -70,6 +80,7 @@ export class PeliculaPage implements OnInit {
       console.log('[PeliculaPage] Datos mapeados:', this.peli);
 
       await this.guardarPeliculaLocal();
+      await this.verificarYaVista();
 
     } catch (err) {
       console.error('[PeliculaPage] Error al cargar detalles:', err);
@@ -130,6 +141,73 @@ export class PeliculaPage implements OnInit {
 
     // Encolar para sincronizar con Supabase (INSERT es idempotente por tmdb_id en upsertPelicula)
     await this.colaService.encolar(DB_TABLES.PELICULA, this.peli.id, SYNC_OPERACION.INSERT);
+  }
+
+  private async verificarYaVista(): Promise<void> {
+    if (!this.usuarioId || !this.peli.tmdb_id) return;
+    const db = this.databaseService.obtenerConexion();
+    const res = await db.query(
+      `SELECT local_id FROM ${DB_TABLES.PELICULA_VISTA}
+       WHERE usuario_id = ? AND tmdb_id = ?`,
+      [this.usuarioId, this.peli.tmdb_id]
+    );
+    if (res.values?.length) {
+      this.yaVista = true;
+      this.vistaLocalId = res.values[0].local_id;
+    }
+  }
+
+  async toggleVista(): Promise<void> {
+    if (!this.usuarioId) return;
+    const db = this.databaseService.obtenerConexion();
+
+    if (this.yaVista && this.vistaLocalId) {
+      // Desmarcar
+      await db.run(
+        `DELETE FROM ${DB_TABLES.PELICULA_VISTA} WHERE local_id = ?`,
+        [this.vistaLocalId]
+      );
+      await db.run(
+        `DELETE FROM ${DB_TABLES.COLA_SYNC} WHERE tabla = ? AND registro_id = ?`,
+        [DB_TABLES.PELICULA_VISTA, this.vistaLocalId]
+      );
+      this.yaVista = false;
+      this.vistaLocalId = null;
+      console.log('[PeliculaPage] Película desmarcada como vista.');
+      return;
+    }
+
+    // Marcar como vista
+    // Re-query to ensure pelicula_id is the local UUID (this.peli.id may still be
+    // the TMDB numeric string if guardarPeliculaLocal() failed earlier).
+    const pelRes = await db.query(
+      'SELECT id FROM local_pelicula WHERE tmdb_id = ?',
+      [this.peli.tmdb_id]
+    );
+    if (pelRes.values?.length) {
+      this.peli.id = pelRes.values[0].id;
+    } else {
+      await this.guardarPeliculaLocal();
+    }
+
+    const localId = crypto.randomUUID();
+    const ahora = new Date().toISOString();
+    const generos = this.peli.generos_json ? JSON.parse(this.peli.generos_json) : [];
+    const generoPrincipal: string | null = generos.length > 0 ? generos[0].nombre : null;
+
+    await db.run(
+      `INSERT OR IGNORE INTO ${DB_TABLES.PELICULA_VISTA}
+         (local_id, usuario_id, pelicula_id, tmdb_id, titulo, poster_url, genero_principal, fecha_vista, sync_status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+      [localId, this.usuarioId, this.peli.id, this.peli.tmdb_id,
+       this.peli.titulo, this.peli.poster_url ?? null, generoPrincipal, ahora]
+    );
+
+    this.yaVista = true;
+    this.vistaLocalId = localId;
+
+    await this.colaService.encolar(DB_TABLES.PELICULA_VISTA, localId, SYNC_OPERACION.INSERT);
+    console.log('[PeliculaPage] Película marcada como vista, local_id:', localId);
   }
 
   irAEscribirResena() {

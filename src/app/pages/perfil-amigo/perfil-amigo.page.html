@@ -27,40 +27,49 @@
     </ion-button>
   </div>
 
-  <div class="ion-padding-horizontal ion-padding-top">
-    <h3 class="text-white section-title">Reseñas Realizadas</h3>
+  <!-- Reseñas realizadas — scroll horizontal -->
+  <div class="ion-padding-top">
+    <div class="ion-padding-horizontal">
+      <h3 class="text-white section-title">Reseñas Realizadas</h3>
+    </div>
 
-    <div *ngIf="resenas.length === 0" class="empty-resenas">
+    <div *ngIf="resenas.length === 0" class="empty-resenas ion-padding-horizontal">
       <ion-icon name="star-outline"></ion-icon>
       <p>Sin reseñas aún</p>
     </div>
 
-    <ion-grid *ngIf="resenas.length > 0">
-      <ion-row>
-        <ion-col size="6" *ngFor="let r of resenas">
-          <ion-card class="movie-card">
-            <div class="poster-container">
-              <img [src]="r.poster_url || 'assets/icon/no-poster.png'" />
-            </div>
-            <ion-card-header>
-              <ion-card-subtitle>{{ r.titulo }}</ion-card-subtitle>
-              <div class="stars-mini">
-                <ion-icon
-                  *ngFor="let s of [1,2,3,4,5]"
-                  [name]="r.calificacion >= s ? 'star' : 'star-outline'"
-                  class="star-mini-icon">
-                </ion-icon>
-              </div>
-              <p class="date-text">{{ r.created_at | date:'dd/MM/yyyy' }}</p>
-            </ion-card-header>
-            <ion-card-content class="comentario-text" *ngIf="r.comentario">
-              "{{ r.comentario }}"
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <div class="scroll-horizontal ps-3" *ngIf="resenas.length > 0">
+      <div class="movie-card-resena" *ngFor="let r of resenas" (click)="verDetalle(r.tmdb_id)">
+        <img [src]="r.poster_url || 'assets/icon/no-poster.png'" class="figma-poster">
+        <div class="stars-mini">
+          <ion-icon
+            *ngFor="let s of [1,2,3,4,5]"
+            [name]="r.calificacion >= s ? 'star' : 'star-outline'"
+            class="star-mini-icon">
+          </ion-icon>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Películas vistas — scroll horizontal -->
+  <div class="ion-padding-top mt-4">
+    <div class="ion-padding-horizontal">
+      <h3 class="text-white section-title">Películas Vistas</h3>
+    </div>
+
+    <div *ngIf="peliculasVistas.length === 0" class="empty-resenas ion-padding-horizontal">
+      <ion-icon name="eye-outline"></ion-icon>
+      <p>Sin películas marcadas aún</p>
+    </div>
+
+    <div class="scroll-horizontal ps-3" *ngIf="peliculasVistas.length > 0">
+      <div class="movie-card" *ngFor="let peli of peliculasVistas" (click)="verDetalle(peli.tmdb_id)">
+        <img [src]="peli.poster_url || 'assets/icon/no-poster.png'" class="figma-poster">
+      </div>
+    </div>
+  </div>
+
 </ion-content>
 
 <app-footer-nav activo="amigos"></app-footer-nav>

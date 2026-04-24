@@ -47,7 +47,7 @@
     </div>
 
     <!-- Populares en tu país -->
-    <div class="mt-5 pt-5 mb-5">
+    <div class="mt-5 pt-5">
       <div class="container">
         <p class="section-title">Populares en tu país</p>
       </div>
@@ -58,6 +58,24 @@
         </div>
       </div>
       <div class="scroll-horizontal ps-3" *ngIf="cargandoPopulares">
+        <div class="movie-card" *ngFor="let i of [0,1,2,3,4]">
+          <div class="figma-poster skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Populares en el mundo -->
+    <div class="mt-5 pt-5 mb-5">
+      <div class="container">
+        <p class="section-title">Populares en el mundo</p>
+      </div>
+
+      <div class="scroll-horizontal ps-3" *ngIf="!cargandoRanking && peliculasRanking.length > 0">
+        <div class="movie-card" *ngFor="let peli of peliculasRanking" (click)="verDetalle(peli.tmdb_id)">
+          <img [src]="'https://image.tmdb.org/t/p/w500' + peli.poster_url" class="figma-poster">
+        </div>
+      </div>
+      <div class="scroll-horizontal ps-3" *ngIf="cargandoRanking">
         <div class="movie-card" *ngFor="let i of [0,1,2,3,4]">
           <div class="figma-poster skeleton-card"></div>
         </div>

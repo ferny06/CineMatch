@@ -24,6 +24,7 @@ export class PerfilAmigoPage implements OnInit {
   };
 
   resenas: any[] = [];
+  peliculasVistas: any[] = [];
   cargando = false;
 
   constructor(
@@ -44,6 +45,7 @@ export class PerfilAmigoPage implements OnInit {
       await Promise.all([
         this.cargarPerfil(),
         this.cargarResenas(),
+        this.cargarPeliculasVistas(),
       ]);
     } finally {
       this.cargando = false;
@@ -70,6 +72,15 @@ export class PerfilAmigoPage implements OnInit {
   private async cargarResenas(): Promise<void> {
     const { data } = await this.supabaseService.obtenerResenasDeUsuario(this.amigoId);
     this.resenas = data ?? [];
+  }
+
+  private async cargarPeliculasVistas(): Promise<void> {
+    const { data } = await this.supabaseService.obtenerPeliculasVistasAmigo(this.amigoId);
+    this.peliculasVistas = data ?? [];
+  }
+
+  verDetalle(tmdbId: number): void {
+    this.router.navigate(['/pelicula', tmdbId]);
   }
 
   irAMensajes(): void {

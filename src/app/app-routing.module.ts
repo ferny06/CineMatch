@@ -57,7 +57,11 @@ const routes: Routes = [
   {
     path: 'formulario-lista',
     loadChildren: () => import('./pages/formulario-lista/formulario-lista.module').then( m => m.FormularioListaPageModule)
+  },  {
+    path: 'peliculas-vistas',
+    loadChildren: () => import('./pages/peliculas-vistas/peliculas-vistas.module').then( m => m.PeliculasVistasPageModule)
   },
+
 
 ];
 

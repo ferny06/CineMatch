@@ -65,3 +65,42 @@ ion-title {
 ion-content {
   --padding-bottom: 75px;
 }
+
+// ─── Scroll horizontal compartido entre home, perfil-amigo y peliculas-vistas ──
+.scroll-horizontal {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding-bottom: 15px;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.movie-card {
+  flex: 0 0 auto;
+  width: 130px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  &:active { transform: scale(0.95); }
+}
+
+.figma-poster {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.skeleton-card {
+  width: 100%;
+  height: 190px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #1a2235 25%, #243048 50%, #1a2235 75%);
+  background-size: 200% 100%;
+  animation: shimmer-global 1.4s infinite;
+}
+
+@keyframes shimmer-global {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

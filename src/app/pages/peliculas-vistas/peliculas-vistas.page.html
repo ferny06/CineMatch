@@ -1,0 +1,47 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/perfil" text=""></ion-back-button>
+    </ion-buttons>
+    <ion-title class="text-white">Mis Películas Vistas</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="bg-dark">
+
+  <!-- Skeleton mientras carga -->
+  <ng-container *ngIf="cargando">
+    <div class="mt-4" *ngFor="let i of [0,1]">
+      <div class="container">
+        <div class="skeleton-title"></div>
+      </div>
+      <div class="scroll-horizontal ps-3">
+        <div class="movie-card" *ngFor="let j of [0,1,2,3]">
+          <div class="figma-poster skeleton-card"></div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Estado vacío -->
+  <div *ngIf="!cargando && grupos.length === 0" class="empty-state">
+    <ion-icon name="eye-outline"></ion-icon>
+    <p>Aún no has marcado películas como vistas</p>
+  </div>
+
+  <!-- Grupos por género -->
+  <ng-container *ngIf="!cargando && grupos.length > 0">
+    <div class="mt-4" *ngFor="let grupo of grupos">
+      <div class="container">
+        <p class="section-title">{{ grupo.genero }}</p>
+      </div>
+      <div class="scroll-horizontal ps-3">
+        <div class="movie-card" *ngFor="let peli of grupo.peliculas" (click)="verDetalle(peli.tmdb_id)">
+          <img [src]="peli.poster_url || 'assets/icon/no-poster.png'" class="figma-poster">
+        </div>
+      </div>
+    </div>
+    <div style="height: 40px;"></div>
+  </ng-container>
+
+</ion-content>

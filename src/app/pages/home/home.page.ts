@@ -5,6 +5,7 @@ import { MovieService } from '../../services/movie';
 import { GeolocalizacionService } from '../../services/geolocalizacion.service';
 import { DatabaseService } from '../../../database/services/database.service';
 import { DB_TABLES } from '../../../database/database.constants';
+import { SupabaseService } from '../../services/supabase.service';
 
 
 @Component({
@@ -19,8 +20,10 @@ export class HomePage implements OnInit {
   peliculasCopia: any[] = [];
   peliculasRecomendadas: any[] = [];
   peliculasPopulares: any[] = [];
+  peliculasRanking: any[] = [];
   cargandoRecomendadas = true;
   cargandoPopulares = true;
+  cargandoRanking = true;
   buscando = false;
   nombre_user: string = '';
 
@@ -28,6 +31,7 @@ export class HomePage implements OnInit {
     private movieService: MovieService,
     private geoService: GeolocalizacionService,
     private databaseService: DatabaseService,
+    private supabaseService: SupabaseService,
     private router: Router
   ) {}
 
@@ -35,8 +39,13 @@ export class HomePage implements OnInit {
     this.cargarDatosUsuario();
     await Promise.all([
       this.cargarRecomendadas(),
-      this.cargarPopularesPais()
+      this.cargarPopularesPais(),
+      this.cargarRankingMundial(),
     ]);
+  }
+
+  async ionViewWillEnter() {
+    await this.cargarRankingMundial();
   }
 
   async cargarDatosUsuario(): Promise<void> {
@@ -71,9 +80,14 @@ export class HomePage implements OnInit {
            WHERE r.usuario_id = ?`,
           [usuarioId]
         );
-        const reviewedIds = new Set<number>(
-          (reviewedRes.values ?? []).map((r: any) => r['tmdb_id']).filter(Boolean)
+        const vistaRes = await db.query(
+          `SELECT tmdb_id FROM ${DB_TABLES.PELICULA_VISTA} WHERE usuario_id = ?`,
+          [usuarioId]
         );
+        const reviewedIds = new Set<number>([
+          ...(reviewedRes.values ?? []).map((r: any) => r['tmdb_id']).filter(Boolean),
+          ...(vistaRes.values ?? []).map((r: any) => r['tmdb_id']).filter(Boolean),
+        ]);
 
         if (genreIds.length > 0) {
           const data = await firstValueFrom(this.movieService.getMoviesByGenres(genreIds));
@@ -130,6 +144,41 @@ export class HomePage implements OnInit {
       } catch {}
     } finally {
       this.cargandoPopulares = false;
+    }
+  }
+
+  private async cargarRankingMundial(): Promise<void> {
+    try {
+      const db = this.databaseService.obtenerConexion();
+
+      // Leer caché local primero
+      const local = await db.query(
+        `SELECT * FROM ${DB_TABLES.RANKING_PELICULA} ORDER BY posicion ASC LIMIT 10`
+      );
+      if (local.values?.length) {
+        this.peliculasRanking = local.values;
+      }
+
+      // Refrescar desde Supabase
+      const { data } = await this.supabaseService.pullRankingPeliculas();
+      if (data?.length) {
+        this.peliculasRanking = data.slice(0, 10);
+        const now = new Date().toISOString();
+        await db.run(`DELETE FROM ${DB_TABLES.RANKING_PELICULA}`);
+        for (const r of data) {
+          await db.run(
+            `INSERT OR REPLACE INTO ${DB_TABLES.RANKING_PELICULA}
+              (id, pelicula_id, tmdb_id, titulo, poster_url, posicion, promedio_calificacion, total_resenas, synced_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [r.id, r.pelicula_id, r.tmdb_id, r.titulo, r.poster_url ?? null,
+             r.posicion, r.promedio_calificacion ?? null, r.total_resenas ?? 0, now]
+          );
+        }
+      }
+    } catch (err) {
+      console.error('[HomePage] Error al cargar ranking mundial:', err);
+    } finally {
+      this.cargandoRanking = false;
     }
   }
 

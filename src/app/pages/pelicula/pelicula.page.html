@@ -17,7 +17,7 @@
   <div class="main-content ion-padding">
     <div class="d-flex justify-content-between align-items-start">
       <h1 class="movie-title text-white">{{ peli.titulo }}</h1>
-      
+
       <div class="rating-badge">
         <ion-icon name="star" color="warning"></ion-icon>
         <span class="text-white">{{ peli.promedio_votos }}</span>
@@ -34,9 +34,19 @@
     </div>
   </div>
 
+  <ion-button
+    expand="block"
+    [color]="yaVista ? 'success' : 'medium'"
+    fill="outline"
+    (click)="toggleVista()"
+    class="boton-reseña ion-margin-top">
+    <ion-icon [name]="yaVista ? 'checkmark-circle' : 'eye-outline'" slot="start"></ion-icon>
+    {{ yaVista ? 'Ya la vi' : 'Marcar como vista' }}
+  </ion-button>
+
   <ion-button expand="block"  (click)="irAEscribirResena()" class="boton-reseña ion-margin-top">
-  <ion-icon name="create-outline" slot="start"></ion-icon>
-  ¿Qué opinas de esta película?
-</ion-button>
+    <ion-icon name="create-outline" slot="start"></ion-icon>
+    ¿Qué opinas de esta película?
+  </ion-button>
 
 </ion-content>
